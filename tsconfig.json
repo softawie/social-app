@@ -1,0 +1,38 @@
+{
+  "extends": "@tsconfig/node23/tsconfig.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "_version": "23.0.0",
+  "compilerOptions": {
+    "lib": [
+      "es2024",
+      "ESNext.Array",
+      "ESNext.Collection",
+      "ESNext.Iterator",
+      "ESNext.Promise"
+    ],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es2024",
+    "types": ["node"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "removeComments": true,
+    "allowJs": false,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "verbatimModuleSyntax": false,
+    "paths": {
+      "@db/*": ["src/db/*"],
+      "@modules/*": ["src/modules/*"],
+      "@models/*": ["src/db/models/*"],
+      "@utils/*": ["src/utils/*"],
+      "@src/*": ["src/*"],
+      "@MiddleWares/*": ["src/MiddleWares/*"],
+      "@helpers/*": ["src/helpers/*"]
+    }
+  },
+  "include": ["src/**/*", "**/*.ts", "**/*.tsx", "src/**/*.ts"],
+  "exclude": ["node_modules"]
+}

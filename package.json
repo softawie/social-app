@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "start": "npx tsx --watch index.ts",
+    "start:nodemon": "npx nodemon dist/index.js",
+    "start:dev": "node dist/index.js",
+    "dev": "concurrently \"tsc --watch\" \"tsc-alias -w\" \"node --watch dist/index.js\""
+  }
+}

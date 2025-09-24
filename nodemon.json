@@ -1,0 +1,6 @@
+{
+  "watch": ["src", "index.ts"],
+  "ext": "ts,json",
+  "exec": "npm run start",
+  "ex": "tsx"
+}
