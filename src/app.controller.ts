@@ -2,7 +2,7 @@ import express, { Express} from "express";
 import { CheckDB } from "@db/connectionDB";
 import userRouter from "@modules/users/user.controller";
 import authRouter from "@modules/auth/auth.controller";
-import { globalErrorHandler } from "@utils/globalError.handler";
+import { globalErrorHandler, NotFoundException } from "@utils/globalError.handler";
 import * as cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -23,7 +23,8 @@ const bootstrap = async (app: Express) => {
   // not found route
   app.all("/*dummy", (req, res, next) => {
     // return res.status(404).json({ message: "Route not found" });
-    return next(new Error("Route not found", { cause: 404 }));
+    // return next(new NotFoundException("Route not found"));
+    throw new NotFoundException("Route not found");
   });
   // Global error handler
   app.use(globalErrorHandler);

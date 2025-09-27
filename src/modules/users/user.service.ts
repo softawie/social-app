@@ -5,6 +5,7 @@ import { SucRes } from "@utils/response.handler";
 import { decrypt } from "@utils/encryptio.utils";
 import { compare, hashing } from "@utils/hash.utils";
 import { UserRoles } from "@utils/enums";
+import { BadReqException, NotFoundException, AppException } from "@utils/globalError.handler";
 
 // Types are globally augmented in src/types/multer-augmentations.d.ts
 
@@ -23,7 +24,7 @@ export const getUsers = async (
     });
   } catch (error) {
     logger.log(error);
-    next(error);
+    throw error as Error;
   }
 };
 
@@ -48,7 +49,7 @@ export const updateProfileImage = async (
 ): Promise<void> => {
   try {
     if (!req.file?.path) {
-      return next(new Error("No image file provided", { cause: 400 }));
+      throw new BadReqException("No image file provided");
     }
     const user = await UserModel.findByIdAndUpdate(
       req.user._id,
@@ -56,7 +57,7 @@ export const updateProfileImage = async (
       { new: true, runValidators: true }
     );
     if (!user) {
-      return next(new Error("User not found", { cause: 404 }));
+      throw new NotFoundException("User not found");
     }
     return SucRes({
       res,
@@ -65,7 +66,7 @@ export const updateProfileImage = async (
       data: { user },
     });
   } catch (error) {
-    next(error);
+    throw error as Error;
   }
 };
 
@@ -82,7 +83,7 @@ export const coverImages = async (
     : undefined;
 
   if (!filesArray?.length) {
-    return next(new Error("No image file provided", { cause: 400 }));
+    throw new BadReqException("No image file provided");
   }
   const user = await UserModel.findByIdAndUpdate(
     req.user._id,
@@ -90,7 +91,7 @@ export const coverImages = async (
     { new: true, runValidators: true }
   );
   if (!user) {
-    return next(new Error("User not found", { cause: 404 }));
+    throw new NotFoundException("User not found");
   }
   return SucRes({
     res,
@@ -111,17 +112,17 @@ export const updatePassword = async (
     hash: req.user.password,
   });
   if (!isMatched) {
-    return next(new Error("Invalid old password", { cause: 400 }));
+    throw new BadReqException("Invalid old password");
   }
   // Prevent reusing current or any previous passwords
   const sameAsCurrent = await compare({ plainText: confirmPassword, hash: req.user.password });
   if (sameAsCurrent) {
-    return next(new Error("New password cannot be the same as the current password", { cause: 400 }));
+    throw new BadReqException("New password cannot be the same as the current password");
   }
   if (Array.isArray(req.user.passwordHistory)) {
     for (const oldHash of req.user.passwordHistory) {
       if (await compare({ plainText: confirmPassword, hash: oldHash })) {
-        return next(new Error("New password cannot match any of your recent passwords", { cause: 400 }));
+        throw new BadReqException("New password cannot match any of your recent passwords");
       }
     }
   }
@@ -136,13 +137,14 @@ export const updatePassword = async (
     }
   );
 
-  return user
-    ? SucRes({
-        res,
-        statusCode: 200,
-        message: "Password updated successfully",
-      })
-    : next(new Error("Invalid Access", { cause: 401 }));
+  if (user) {
+    return SucRes({
+      res,
+      statusCode: 200,
+      message: "Password updated successfully",
+    });
+  }
+  throw new AppException("Invalid Access", 401);
 };
 
 export const freezeAccount = async (
@@ -153,7 +155,7 @@ export const freezeAccount = async (
   const { userId } = req.params;
   const user = await UserModel.findById(userId);
   if (userId && req.user.role !== UserRoles.ADMIN) {
-    return next(new Error("Invalid Access", { cause: 403 }));
+    throw new AppException("Invalid Access", 403);
   }
   const updatedUser = await UserModel.findByIdAndUpdate(
     userId || req.user._id,
@@ -162,13 +164,14 @@ export const freezeAccount = async (
    { freezeAt: Date.now(),freezeBy:userId || req.user._id,$unset:{unfreezeAt:true,unfreezeBy:true} } //other way
 
   );
-  return updatedUser
-    ? SucRes({
-        res,
-        statusCode: 200,
-        message: "Account frozen successfully",
-      })
-    : next(new Error("Invalid Access", { cause: 401 }));
+  if (updatedUser) {
+    return SucRes({
+      res,
+      statusCode: 200,
+      message: "Account frozen successfully",
+    });
+  }
+  throw new AppException("Invalid Access", 401);
 };
 
 export const unfreezeAccount = async (
@@ -179,7 +182,7 @@ export const unfreezeAccount = async (
   const { userId } = req.params;
   const user = await UserModel.findById(userId);
   if (userId && req.user.role !== UserRoles.ADMIN) {
-    return next(new Error("Invalid Access", { cause: 403 }));
+    throw new AppException("Invalid Access", 403);
   }
   const updatedUser = await UserModel.findByIdAndUpdate(
     userId ,
@@ -187,13 +190,14 @@ export const unfreezeAccount = async (
     { unfreezeAt: Date.now(),unfreezeBy: req.user._id,$unset:{freezeAt:true,freezeBy:true} } //other way
 
   );
-  return updatedUser
-    ? SucRes({
-        res,
-        statusCode: 200,
-        message: "Account unfrozen successfully",
-      })
-    : next(new Error("Invalid Access", { cause: 401 }));
+  if (updatedUser) {
+    return SucRes({
+      res,
+      statusCode: 200,
+      message: "Account unfrozen successfully",
+    });
+  }
+  throw new AppException("Invalid Access", 401);
 };
 
 export const deleteAccount = async (
@@ -205,7 +209,7 @@ export const deleteAccount = async (
 
   // Only admins can delete another user's account
   if (userId && req.user.role !== UserRoles.ADMIN) {
-    return next(new Error("Invalid Access", { cause: 403 }));
+    throw new AppException("Invalid Access", 403);
   }
 
   // Use deleteOne to get a DeleteResult that contains deletedCount
@@ -215,11 +219,12 @@ export const deleteAccount = async (
     freezeAt: { $exists: false },
   });
 
-  return result.deletedCount && result.deletedCount > 0
-    ? SucRes({
-        res,
-        statusCode: 200,
-        message: "Account deleted successfully",
-      })
-    : next(new Error("Invalid Access", { cause: 401 }));
+  if (result.deletedCount && result.deletedCount > 0) {
+    return SucRes({
+      res,
+      statusCode: 200,
+      message: "Account deleted successfully",
+    });
+  }
+  throw new AppException("Invalid Access", 401);
 };

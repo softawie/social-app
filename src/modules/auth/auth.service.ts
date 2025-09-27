@@ -16,6 +16,7 @@ import { generateToken } from "@utils/token.utils";
 import { Request, Response, NextFunction } from "express";
 import { OAuth2Client } from "google-auth-library";
 import { customAlphabet } from "nanoid";
+import { AppException, BadReqException, NotFoundException } from "@utils/globalError.handler";
 
 const signup = async (
   req: Request,
@@ -27,7 +28,7 @@ const signup = async (
   //check if user already exists
   const existingUser = await UserModel.findOne({ email });
   if (existingUser) {
-    return next(new Error("User already exists", { cause: 409 }));
+    throw new AppException("User already exists", 409);
   }
   // Hash the password
   const hashedPassword = await hashing({ plainText: password });
@@ -73,25 +74,25 @@ const login = async (
   // Check if user exists
   const user = await UserModel.findOne({ email });
   if (!user) {
-    return next(new Error("User not found", { cause: 404 }));
+    throw new NotFoundException("User not found");
   }
   if (!user.confirmEmail) {
-    return next(
-      new Error("User not found or Email not confirmed", { cause: 401 })
-    );
+    throw new AppException("User not found or Email not confirmed", 401);
   }
   const isMatched = await compare({
     plainText: password,
     hash: user.password,
   });
   if (!isMatched) {
-    return next(new Error("Invalid credentials", { cause: 401 }));
+    throw new AppException("Invalid credentials", 401);
   }
+  const name = `${user.firstName} ${user.lastName}`;
+
   const { accessToken, refreshToken } = generateToken({ user: user as IUser });
   SucRes({
     res,
     message: "User logged in successfully",
-    data: { accessToken, refreshToken },
+    data: { accessToken, refreshToken ,name},
   });
 };
 
@@ -103,7 +104,7 @@ const logout = async (
   const user = req.user as IUser;
   const decoded = req.decoded as DecodedToken | undefined;
   if (!user || !decoded) {
-    return next(new Error("Unauthorized", { cause: 401 }));
+    throw new AppException("Unauthorized", 401);
   }
   // JWT `exp` is in seconds since epoch. Convert to ms and compute remaining time.
   const expSeconds = decoded.exp as number | undefined;
@@ -150,11 +151,11 @@ const loginWithGmail = async (
   const { idToken }: DecodedToken = req.body;
   const payload = await verifyGoogleAccount({ idToken });
   if (!payload) {
-    return next(new Error("Invalid Google token", { cause: 401 }));
+    throw new AppException("Invalid Google token", 401);
   }
   const { email, email_verified, given_name, family_name, picture } = payload;
   if (!email_verified) {
-    return next(new Error("Email not verified", { cause: 401 }));
+    throw new AppException("Email not verified", 401);
   }
   let user = (await UserModel.findOne({ email })) as IUser | User;
   if (user) {
@@ -217,12 +218,10 @@ export const confirmEmail = async (
     confirmEmail: { $exists: false },
   });
   if (!user) {
-    return next(
-      new Error("User not found or Email already confirmed", { cause: 401 })
-    );
+    throw new AppException("User not found or Email already confirmed", 401);
   }
   if (!(await compare({ plainText: otp, hash: user.confirmEmailOtp }))) {
-    return next(new Error("Invalid code", { cause: 401 }));
+    throw new AppException("Invalid code", 401);
   }
   await UserModel.updateOne(
     { email },
@@ -250,9 +249,7 @@ const forgetPassword = async (
     { $set: { forgetPasswordOtp: hashedOtp } }
   );
   if (!user) {
-    return next(
-      new Error("User not found or Email not confirmed", { cause: 401 })
-    );
+    throw new AppException("User not found or Email not confirmed", 401);
   }
   const name = `${user.firstName} ${user.lastName}`;
 
@@ -266,6 +263,7 @@ const forgetPassword = async (
   return SucRes({
     res,
     message: "Check your email for reset password OTP",
+    data: {userId:user.id},
   });
 };
 
@@ -274,21 +272,22 @@ const resetPassword = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { email, code, password } = req.body;
+  const { userId, code, password ,email} = req.body;
   const user = await UserModel.findOne({
+    _id: userId,
     email,
     forgetPasswordOtp: { $exists: true },
     freezeAt: { $exists: false },
     confirmEmail: { $exists: true },
     provider: providersEnum.SYSTEM,
   });
-  if (!user) {
-    return next(
-      new Error("User not found or Email not confirmed", { cause: 401 })
-    );
+  // const userById = await UserModel.findOne({ _id: userId });
+
+  if ( !user) {
+    throw new AppException("User not found or Email not confirmed", 401);
   }
   if (!(await compare({ plainText: code, hash: user.forgetPasswordOtp }))) {
-    return next(new Error("Invalid code", { cause: 401 }));
+    throw new AppException("Invalid code", 401);
   }
 
   // Enforce password history: reject if matches current or any previous
@@ -297,20 +296,12 @@ const resetPassword = async (
     hash: user.password,
   });
   if (matchesCurrent) {
-    return next(
-      new Error("New password cannot be the same as the current password", {
-        cause: 400,
-      })
-    );
+    throw new BadReqException("New password cannot be the same as the current password");
   }
   if (Array.isArray(user.passwordHistory)) {
     for (const oldHash of user.passwordHistory) {
       if (await compare({ plainText: password, hash: oldHash })) {
-        return next(
-          new Error("New password cannot match any of your recent passwords", {
-            cause: 400,
-          })
-        );
+        throw new BadReqException("New password cannot match any of your recent passwords");
       }
     }
   }
