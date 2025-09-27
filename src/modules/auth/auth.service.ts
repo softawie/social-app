@@ -16,14 +16,20 @@ import { generateToken } from "@utils/token.utils";
 import { Request, Response, NextFunction } from "express";
 import { OAuth2Client } from "google-auth-library";
 import { customAlphabet } from "nanoid";
-import { AppException, BadReqException, NotFoundException } from "@utils/globalError.handler";
+import {
+  AppException,
+  BadReqException,
+  NotFoundException,
+} from "@utils/globalError.handler";
+import { IConfirmEmailDTO, ILoginDTO, IResetPasswordDTO, ISignupDTO, User } from "./auth.dto";
 
 const signup = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { firstName, lastName, password, email, age, phone, role } = req.body;
+  const { firstName, lastName, password, email, age, phone, role }: ISignupDTO =
+    req.body;
   const name = `${firstName} ${lastName}`;
   //check if user already exists
   const existingUser = await UserModel.findOne({ email });
@@ -69,7 +75,7 @@ const login = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { password, email } = req.body;
+  const { password, email }: ILoginDTO = req.body;
 
   // Check if user exists
   const user = await UserModel.findOne({ email });
@@ -92,7 +98,7 @@ const login = async (
   SucRes({
     res,
     message: "User logged in successfully",
-    data: { accessToken, refreshToken ,name},
+    data: { accessToken, refreshToken, name },
   });
 };
 
@@ -108,7 +114,9 @@ const logout = async (
   }
   // JWT `exp` is in seconds since epoch. Convert to ms and compute remaining time.
   const expSeconds = decoded.exp as number | undefined;
-  const expiresIn = expSeconds ? Math.max(0, expSeconds * 1000 - Date.now()) : 0;
+  const expiresIn = expSeconds
+    ? Math.max(0, expSeconds * 1000 - Date.now())
+    : 0;
 
   await TokenModel.create({
     userId: user._id,
@@ -131,16 +139,6 @@ async function verifyGoogleAccount({ idToken }: { idToken: string }) {
   });
   const payload = ticket.getPayload();
   return payload;
-}
-
-interface User {
-  email: string | undefined;
-  email_verified: boolean | undefined;
-  given_name: string | undefined;
-  family_name: string | undefined;
-  picture: string | undefined;
-  provider: providersEnum;
-  role: string;
 }
 
 const loginWithGmail = async (
@@ -210,7 +208,7 @@ export const confirmEmail = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { email, otp } = req.body;
+  const { email, otp }: IConfirmEmailDTO = req.body;
   // to filter also with confirmEmail
   const user = await UserModel.findOne({
     email,
@@ -263,7 +261,7 @@ const forgetPassword = async (
   return SucRes({
     res,
     message: "Check your email for reset password OTP",
-    data: {userId:user.id},
+    data: { userId: user.id },
   });
 };
 
@@ -272,7 +270,7 @@ const resetPassword = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { userId, code, password ,email} = req.body;
+  const { userId, code, password, email }: IResetPasswordDTO = req.body;
   const user = await UserModel.findOne({
     _id: userId,
     email,
@@ -283,7 +281,7 @@ const resetPassword = async (
   });
   // const userById = await UserModel.findOne({ _id: userId });
 
-  if ( !user) {
+  if (!user) {
     throw new AppException("User not found or Email not confirmed", 401);
   }
   if (!(await compare({ plainText: code, hash: user.forgetPasswordOtp }))) {
@@ -296,12 +294,16 @@ const resetPassword = async (
     hash: user.password,
   });
   if (matchesCurrent) {
-    throw new BadReqException("New password cannot be the same as the current password");
+    throw new BadReqException(
+      "New password cannot be the same as the current password"
+    );
   }
   if (Array.isArray(user.passwordHistory)) {
     for (const oldHash of user.passwordHistory) {
       if (await compare({ plainText: password, hash: oldHash })) {
-        throw new BadReqException("New password cannot match any of your recent passwords");
+        throw new BadReqException(
+          "New password cannot match any of your recent passwords"
+        );
       }
     }
   }
