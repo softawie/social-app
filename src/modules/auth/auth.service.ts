@@ -13,7 +13,7 @@ import { emailEvent } from "@utils/event.utils";
 import { hashing, compare } from "@utils/hash.utils";
 import { SucRes } from "@utils/response.handler";
 import { generateToken } from "@utils/token.utils";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { OAuth2Client } from "google-auth-library";
 import { customAlphabet } from "nanoid";
 import {
@@ -25,8 +25,7 @@ import { IConfirmEmailDTO, ILoginDTO, IResetPasswordDTO, ISignupDTO, User } from
 
 const signup = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { firstName, lastName, password, email, age, phone, role }: ISignupDTO =
     req.body;
@@ -72,8 +71,7 @@ const signup = async (
 
 const login = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { password, email }: ILoginDTO = req.body;
 
@@ -104,8 +102,7 @@ const login = async (
 
 const logout = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const user = req.user as IUser;
   const decoded = req.decoded as DecodedToken | undefined;
@@ -143,8 +140,7 @@ async function verifyGoogleAccount({ idToken }: { idToken: string }) {
 
 const loginWithGmail = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { idToken }: DecodedToken = req.body;
   const payload = await verifyGoogleAccount({ idToken });
@@ -191,8 +187,7 @@ const loginWithGmail = async (
 
 export const refreshToken = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const user = req.user;
   const { accessToken, refreshToken } = generateToken({ user: user as IUser });
@@ -205,8 +200,7 @@ export const refreshToken = async (
 
 export const confirmEmail = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { email, otp }: IConfirmEmailDTO = req.body;
   // to filter also with confirmEmail
@@ -236,8 +230,7 @@ export const confirmEmail = async (
 
 const forgetPassword = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { email } = req.body;
   const code = customAlphabet("1234567890", 6)();
@@ -267,8 +260,7 @@ const forgetPassword = async (
 
 const resetPassword = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { userId, code, password, email }: IResetPasswordDTO = req.body;
   const user = await UserModel.findOne({

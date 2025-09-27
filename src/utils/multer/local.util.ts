@@ -1,4 +1,4 @@
-import multer, { FileFilterCallback, memoryStorage } from "multer";
+import multer, {  memoryStorage } from "multer";
 import path from "node:path";
 import fs from "node:fs";
 import { Request, Response, NextFunction } from "express";
@@ -406,7 +406,7 @@ export const secureFileUpload = ({
     });
 
     // 2) Validate magic number (still in memory)
-    const validateFiles = (req: Request, res: Response, next: NextFunction) => {
+    const validateFiles = (req: Request, res: Response) => {
         try {
             if (validation.enableMagicNumberCheck !== false) {
                 if (req.file) validateFile(req.file);

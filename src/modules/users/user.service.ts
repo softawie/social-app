@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import UserModel from "../../db/models/user.model";
 import { logger } from "@src/helpers/logger.helper";
 import { SucRes } from "@utils/response.handler";
@@ -11,8 +11,7 @@ import { BadReqException, NotFoundException, AppException } from "@utils/globalE
 
 export const getUsers = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   try {
     const user = await UserModel.create(req.body);
@@ -20,18 +19,16 @@ export const getUsers = async (
       res,
       statusCode: 201,
       message: "User added in successfully",
-      data: user,
     });
   } catch (error) {
     logger.log(error);
-    throw error as Error;
+    throw error;
   }
 };
 
 export const getSingleUser = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   req.user.phone = decrypt({ cipherText: req.user.phone });
   SucRes({
@@ -44,8 +41,7 @@ export const getSingleUser = async (
 
 export const updateProfileImage = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   try {
     if (!req.file?.path) {
@@ -72,8 +68,7 @@ export const updateProfileImage = async (
 
 export const coverImages = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   // Normalize req.files to an array regardless of multer mode
   const filesArray: Express.Multer.File[] | undefined = Array.isArray(req.files)
@@ -103,8 +98,7 @@ export const coverImages = async (
 
 export const updatePassword = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { oldPassword, confirmPassword } = req.body;
   const isMatched = await compare({
@@ -149,8 +143,7 @@ export const updatePassword = async (
 
 export const freezeAccount = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { userId } = req.params;
   const user = await UserModel.findById(userId);
@@ -176,8 +169,7 @@ export const freezeAccount = async (
 
 export const unfreezeAccount = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { userId } = req.params;
   const user = await UserModel.findById(userId);
@@ -202,8 +194,7 @@ export const unfreezeAccount = async (
 
 export const deleteAccount = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): Promise<void> => {
   const { userId } = req.params;
 
