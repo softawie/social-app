@@ -406,7 +406,7 @@ export const secureFileUpload = ({
     });
 
     // 2) Validate magic number (still in memory)
-    const validateFiles = (req: Request, res: Response) => {
+    const validateFiles = (req: Request, res: Response, next: NextFunction) => {
         try {
             if (validation.enableMagicNumberCheck !== false) {
                 if (req.file) validateFile(req.file);
