@@ -67,6 +67,40 @@ logsRouter.get("/logs", (req: Request, res: Response) => {
   }
 });
 
+// GET /logs/:id - Get a specific log by ID
+logsRouter.get("/logs/:id", (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const logId = parseInt(id);
+    
+    if (isNaN(logId)) {
+      return res.status(400).json({ 
+        message: "Invalid log ID. ID must be a number." 
+      });
+    }
+    
+    const log = structuredLogger.getLogById(logId);
+    
+    if (!log) {
+      return res.status(404).json({ 
+        message: `Log with ID ${logId} not found` 
+      });
+    }
+    
+    SucRes({
+      res,
+      statusCode: 200,
+      message: "Log retrieved successfully",
+      data: log
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: "Error retrieving log", 
+      error: (error as Error).message 
+    });
+  }
+});
+
 // GET /logs/stats - Get log statistics
 logsRouter.get("/logs/stats", (req: Request, res: Response) => {
   try {

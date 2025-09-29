@@ -11,6 +11,11 @@ export interface LogEntry {
   responseTime: number;
   ip: string;
   userAgent: string;
+  requestHeaders?: Record<string, any>;
+  responseHeaders?: Record<string, any>;
+  requestBody?: any;
+  responseBody?: any;
+  error?: any;
 }
 
 class StructuredLogger {
@@ -52,7 +57,7 @@ class StructuredLogger {
     }
   }
 
-  public logRequest(req: Request, res: Response, responseTime: number): void {
+  public logRequest(req: Request, res: Response, responseTime: number, responseBody?: any, error?: any): void {
     const logEntry: LogEntry = {
       id: this.currentId++,
       timestamp: new Date().toISOString(),
@@ -61,7 +66,12 @@ class StructuredLogger {
       status: res.statusCode,
       responseTime,
       ip: req.ip || req.connection.remoteAddress || "unknown",
-      userAgent: req.get("User-Agent") || "unknown"
+      userAgent: req.get("User-Agent") || "unknown",
+      requestHeaders: req.headers,
+      responseHeaders: res.getHeaders(),
+      requestBody: req.body,
+      responseBody: responseBody,
+      error: error
     };
 
     this.logs.push(logEntry);
@@ -98,6 +108,10 @@ class StructuredLogger {
     return this.logs.filter(log => log.method.toLowerCase() === method.toLowerCase());
   }
 
+  public getLogById(id: number): LogEntry | undefined {
+    return this.logs.find(log => log.id === id);
+  }
+
   public clearLogs(): void {
     this.logs = [];
     this.currentId = 1;
@@ -111,12 +125,41 @@ export const structuredLogger = new StructuredLogger();
 // Middleware function
 export const structuredLoggerMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const startTime = Date.now();
+  let responseBody: any;
+  let error: any;
 
-  // Override res.end to capture response time
+  // Override res.json to capture response body
+  const originalJson = res.json.bind(res);
+  res.json = function(body?: any): Response {
+    responseBody = body;
+    return originalJson(body);
+  };
+
+  // Override res.send to capture response body
+  const originalSend = res.send.bind(res);
+  res.send = function(body?: any): Response {
+    if (!responseBody) {
+      responseBody = body;
+    }
+    return originalSend(body);
+  };
+
+  // Override res.end to capture response time and log
   const originalEnd = res.end.bind(res);
   res.end = function(chunk?: any, encoding?: any, cb?: () => void): Response {
     const responseTime = Date.now() - startTime;
-    structuredLogger.logRequest(req, res, responseTime);
+    
+    // If chunk is provided and no responseBody captured, use chunk
+    if (chunk && !responseBody) {
+      responseBody = chunk;
+    }
+
+    // Capture error if status code indicates error
+    if (res.statusCode >= 400) {
+      error = responseBody || `HTTP ${res.statusCode} Error`;
+    }
+
+    structuredLogger.logRequest(req, res, responseTime, responseBody, error);
     return originalEnd(chunk, encoding, cb);
   };
 
