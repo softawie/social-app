@@ -155,14 +155,22 @@
         }
         .modal-content {
             background-color: #fefefe;
-            margin: 5% auto;
+            margin: 2% auto;
             padding: 20px;
             border-radius: 8px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 80vh;
+            width: 95%;
+            max-width: 1400px;
+            max-height: 90vh;
             overflow-y: auto;
             position: relative;
+        }
+        /* Wider screens support */
+        @media (min-width: 1600px) {
+            .modal-content { max-width: 1600px; }
+        }
+        /* Small screens tweaks */
+        @media (max-width: 600px) {
+            .modal-content { width: 98%; margin: 1% auto; }
         }
         .close {
             color: #aaa;
@@ -253,6 +261,64 @@
             font-size: 12px;
             line-height: 1.4;
         }
+        
+        /* Search functionality styles */
+        .modal-search {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        .search-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-info {
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .search-highlight {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+        .search-highlight.current {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .search-btn {
+            padding: 4px 8px;
+            border: 1px solid #ced4da;
+            background-color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .search-btn:hover {
+            background-color: #e9ecef;
+        }
+        .search-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -332,6 +398,18 @@
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <h2>📋 Request Details</h2>
+            
+            <!-- Search functionality -->
+            <div class="modal-search">
+                <input type="text" id="modalSearchInput" class="search-input" placeholder="Search in request details..." onkeyup="handleSearchKeyup(event)">
+                <div class="search-controls">
+                    <button class="search-btn" onclick="searchInModal('prev')" id="searchPrevBtn">↑ Previous</button>
+                    <button class="search-btn" onclick="searchInModal('next')" id="searchNextBtn">↓ Next</button>
+                    <button class="search-btn" onclick="clearSearch()">✕ Clear</button>
+                    <span class="search-info" id="searchInfo">Enter text to search</span>
+                </div>
+            </div>
+            
             <div id="modalContent">
                 <!-- Modal content will be loaded here -->
             </div>
@@ -432,6 +510,193 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // Search functionality variables
+        let searchMatches = [];
+        let currentSearchIndex = -1;
+        let originalModalContent = '';
+
+        // Search functions
+        function handleSearchKeyup(event) {
+            if (event.key === 'Enter') {
+                searchInModal('next');
+            } else if (event.key === 'Escape') {
+                clearSearch();
+            } else {
+                performSearch();
+            }
+        }
+
+        function performSearch() {
+            const searchTerm = document.getElementById('modalSearchInput').value.trim();
+            const modalContent = document.getElementById('modalContent');
+            
+            if (!searchTerm) {
+                clearSearch();
+                return;
+            }
+
+            // Store original content if not already stored
+            if (!originalModalContent) {
+                originalModalContent = modalContent.innerHTML;
+            }
+
+            // Remove previous highlights
+            modalContent.innerHTML = originalModalContent;
+
+            // Find all matches
+            searchMatches = [];
+            const walker = document.createTreeWalker(
+                modalContent,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+
+            const textNodes = [];
+            let node;
+            while (node = walker.nextNode()) {
+                textNodes.push(node);
+            }
+
+            // Search in text nodes
+            textNodes.forEach((textNode, nodeIndex) => {
+                const text = textNode.textContent;
+                const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    searchMatches.push({
+                        node: textNode,
+                        start: match.index,
+                        end: match.index + searchTerm.length,
+                        nodeIndex: nodeIndex
+                    });
+                }
+            });
+
+            // Highlight all matches
+            highlightMatches();
+            updateSearchInfo();
+            
+            if (searchMatches.length > 0) {
+                currentSearchIndex = 0;
+                scrollToCurrentMatch();
+            }
+        }
+
+        function highlightMatches() {
+            // Process matches in reverse order to maintain indices
+            const processedNodes = new Map();
+            
+            searchMatches.reverse().forEach((match, index) => {
+                const { node, start, end } = match;
+                const text = node.textContent;
+                
+                if (!processedNodes.has(node)) {
+                    processedNodes.set(node, []);
+                }
+                processedNodes.get(node).push({ start, end, index: searchMatches.length - 1 - index });
+            });
+
+            processedNodes.forEach((matches, node) => {
+                let newHTML = '';
+                let lastIndex = 0;
+                const text = node.textContent;
+
+                matches.sort((a, b) => a.start - b.start).forEach(match => {
+                    newHTML += escapeHtml(text.substring(lastIndex, match.start));
+                    newHTML += `<span class="search-highlight" data-search-index="${match.index}">${escapeHtml(text.substring(match.start, match.end))}</span>`;
+                    lastIndex = match.end;
+                });
+                newHTML += escapeHtml(text.substring(lastIndex));
+
+                const wrapper = document.createElement('span');
+                wrapper.innerHTML = newHTML;
+                node.parentNode.replaceChild(wrapper, node);
+            });
+
+            searchMatches.reverse(); // Restore original order
+        }
+
+        function searchInModal(direction) {
+            if (searchMatches.length === 0) {
+                performSearch();
+                return;
+            }
+
+            // Remove current highlight
+            const currentHighlight = document.querySelector('.search-highlight.current');
+            if (currentHighlight) {
+                currentHighlight.classList.remove('current');
+            }
+
+            // Move to next/previous match
+            if (direction === 'next') {
+                currentSearchIndex = (currentSearchIndex + 1) % searchMatches.length;
+            } else {
+                currentSearchIndex = currentSearchIndex <= 0 ? searchMatches.length - 1 : currentSearchIndex - 1;
+            }
+
+            scrollToCurrentMatch();
+        }
+
+        function scrollToCurrentMatch() {
+            if (currentSearchIndex >= 0 && currentSearchIndex < searchMatches.length) {
+                const highlights = document.querySelectorAll('.search-highlight');
+                const currentHighlight = highlights[currentSearchIndex];
+                
+                if (currentHighlight) {
+                    // Remove previous current class
+                    highlights.forEach(h => h.classList.remove('current'));
+                    
+                    // Add current class to active highlight
+                    currentHighlight.classList.add('current');
+                    
+                    // Scroll to the element
+                    currentHighlight.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+            updateSearchInfo();
+        }
+
+        function updateSearchInfo() {
+            const searchInfo = document.getElementById('searchInfo');
+            const prevBtn = document.getElementById('searchPrevBtn');
+            const nextBtn = document.getElementById('searchNextBtn');
+            
+            if (searchMatches.length === 0) {
+                const searchTerm = document.getElementById('modalSearchInput').value.trim();
+                searchInfo.textContent = searchTerm ? 'No matches found' : 'Enter text to search';
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+            } else {
+                searchInfo.textContent = `${currentSearchIndex + 1} of ${searchMatches.length} matches`;
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
+            }
+        }
+
+        function clearSearch() {
+            const modalContent = document.getElementById('modalContent');
+            const searchInput = document.getElementById('modalSearchInput');
+            
+            if (originalModalContent) {
+                modalContent.innerHTML = originalModalContent;
+            }
+            
+            searchInput.value = '';
+            searchMatches = [];
+            currentSearchIndex = -1;
+            originalModalContent = '';
+            updateSearchInfo();
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
         async function loadStats() {
@@ -659,6 +924,9 @@
         function displayLogModal(log) {
             const modal = document.getElementById('logModal');
             const modalContent = document.getElementById('modalContent');
+            
+            // Reset search when opening new modal
+            clearSearch();
             
             // Format the log data for display with syntax highlighting
             const requestHeaders = log.requestHeaders && Object.keys(log.requestHeaders).length > 0 
