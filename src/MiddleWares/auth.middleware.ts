@@ -5,6 +5,7 @@ import { Document } from "mongoose";
 import { IUser } from "@db/models/user.model";
 import { TokenType, UserRoles } from "@utils/enums";
 import TokenModel from "@db/models/token.model";
+import { AppException, NotFoundException } from "@utils/globalError.handler";
 
 interface AuthenticatedRequest extends Request {
   user?: (Document<unknown, {}, IUser> & IUser & { _id: unknown }) | undefined;
@@ -25,13 +26,13 @@ export const authenticationMiddleware = async (
     authorization?: string | undefined;
   };
   if (!authorization) {
-    return next(new Error("Authorization token missing", { cause: 401 }));
+    throw new AppException("Authorization token missing", 401);
   }
 
   const [bearer, tokenStr] = authorization.split(" ") || [];
 
   if (!bearer || !tokenStr) {
-    return next(new Error("Invalid authorization header", { cause: 401 }));
+    throw new AppException("Invalid authorization header", 401);
   }
 
   // First verify the token to get the user ID
@@ -42,11 +43,11 @@ export const authenticationMiddleware = async (
 
   const tokenDoc = await TokenModel.findOne({ jti: decoded.jti });
   if(decoded.jti && tokenDoc){
-    return next(new Error("Token is revoked", { cause: 401 }));
+    throw new AppException("Token is revoked", 401);
   }
   const user = await UserModel.findById({ _id: decoded._id });
   if (!user) {
-    return next(new Error("User not found", { cause: 404 }));
+    throw new NotFoundException("User not found");
   }
   req.user = user;
   req.decoded = decoded;
@@ -57,7 +58,7 @@ export const authenticationMiddleware = async (
 export const authorizationMiddleware = ({accessRoles=[]}: {accessRoles: UserRoles[]}) => {
     return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
         if (!accessRoles.includes(req.user?.role as UserRoles)) {
-            return next(new Error("Unauthorized", { cause: 403 }));
+            throw new AppException("Unauthorized", 403);
         }
         next();
     }

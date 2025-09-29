@@ -1,56 +1,79 @@
 import { generalValidations } from "@utils/general.valiations";
-import joi from "joi";
+import { z } from "zod";
 
-const signUpValidation = joi.object({
-  firstName: generalValidations.firstName.required(),
-  lastName: generalValidations.lastName.required(),
-  email: generalValidations.email.required(),
-  password: generalValidations.password.required(),
-  age: generalValidations.age,
-  phone: generalValidations.phone,
-  role: generalValidations.role,
-});
-
-const loginValidation = joi
+const signUpValidation = z
   .object({
-    email: generalValidations.email.required(),
-    password: generalValidations.password.required(),
+    firstName: generalValidations.firstName,
+    lastName: generalValidations.lastName,
+    email: generalValidations.email,
+    password: generalValidations.password,
+    age: generalValidations.age.optional(),
+    phone: generalValidations.phone.optional(),
+    role: generalValidations.role.optional(),
   })
-  .required();
+  .strip();
 
-const forgetPasswordValidation = joi.object({
-  email: generalValidations.email.required(),
-});
+const loginValidation = z
+  .object({
+    email: generalValidations.email,
+    password: generalValidations.password,
+  })
+  .strip();
 
-const resetPasswordValidation = joi.object({
-  email: generalValidations.email.required(),
-  code: generalValidations.code.required(),
-  password: generalValidations.password.required(),
-  confirmPassword: generalValidations.confirmPassword,
-});
+const forgetPasswordValidation = z
+  .object({
+    email: generalValidations.email,
+  })
+  .strip();
 
-const updatePasswordValidation = joi.object({
-  oldPassword: generalValidations.password.required(),
-  password: generalValidations.password
-    .not(joi.ref("oldPassword"))
-    .messages({
-      "any.invalid": "New password must be different from old password",
-      "any.required": "password is required",
-    })
-    .required(),
-  confirmPassword: generalValidations.confirmPassword,
-});
+const resetPasswordValidation = z
+  .object({
+    userId: generalValidations.userId,
+    email: generalValidations.email,
+    code: generalValidations.code,
+    password: generalValidations.password,
+    confirmPassword: generalValidations.confirmPassword,
+  })
+  .strip()
+  .refine((data: { password: string; confirmPassword: string }) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "confirmPassword must match password",
+  });
 
-const freezeAccountValidation = joi.object({
-  userId: generalValidations.userId,
-});
-const unfreezeAccountValidation = joi.object({
-  userId: generalValidations.userId.required(),
-});
+const updatePasswordValidation = z
+  .object({
+    oldPassword: generalValidations.password,
+    password: generalValidations.password,
+    confirmPassword: generalValidations.confirmPassword,
+  })
+  .strip()
+  .refine((data: { password: string; oldPassword: string }) => data.password !== data.oldPassword, {
+    path: ["password"],
+    message: "New password must be different from old password",
+  })
+  .refine((data: { password: string; confirmPassword: string }) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "confirmPassword must match password",
+  });
 
-const deleteAccountValidation = joi.object({
-  userId: generalValidations.userId.required(),
-});
+const freezeAccountValidation = z
+  .object({
+    userId: generalValidations.userId.optional(),
+  })
+  .strip();
+
+const unfreezeAccountValidation = z
+  .object({
+    userId: generalValidations.userId,
+  })
+  .strip();
+
+const deleteAccountValidation = z
+  .object({
+    userId: generalValidations.userId,
+  })
+  .strip();
+
 export {
   signUpValidation,
   loginValidation,

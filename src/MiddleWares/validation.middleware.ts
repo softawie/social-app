@@ -1,25 +1,22 @@
 import { ValidationLocation } from "@utils/enums";
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import  { ObjectSchema } from "joi";
+import { BadReqException } from "@utils/globalError.handler";
+import { z } from "zod";
 
 export const validate = (
-  schema: ObjectSchema,
+  schema: z.ZodTypeAny,
   location: ValidationLocation = ValidationLocation.Body
 ): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const { error, value } = schema.validate(req[location], {
-      abortEarly: false,
-      stripUnknown: true,
-      allowUnknown: true,
-    });
+    const parsed = schema.safeParse(req[location]);
 
-    if (error) {
-      const message = error.details.map((d) => d.message).join(", ");
-      return next(new Error(message, { cause: 400 }));
+    if (!parsed.success) {
+      const message = parsed.error.issues.map((e) => e.message).join(", ");
+      throw new BadReqException(message);
     }
 
-    // assign sanitized values back
-    req[location] = value;
+    // assign sanitized values back (unknown keys stripped by .strip())
+    req[location] = parsed.data as any;
     return next();
   };
 };

@@ -1,7 +1,8 @@
-import multer, { FileFilterCallback, memoryStorage } from "multer";
+import multer, {  memoryStorage } from "multer";
 import path from "node:path";
 import fs from "node:fs";
 import { Request, Response, NextFunction } from "express";
+import { BadReqException } from "@utils/globalError.handler";
 
 export interface FileValidationOptions {
     allowedMimeTypes: string[];
@@ -228,10 +229,10 @@ export const validateMagicNumber = (
             } catch (error) {
                 const errorMsg = `Failed to read file for validation: ${error instanceof Error ? error.message : String(error)}`;
                 console.error(errorMsg);
-                return next(new FileValidationError(errorMsg, 500));
+                throw new FileValidationError(errorMsg, 500);
             }
         } else {
-            return next(new FileValidationError('File has no buffer or path for validation', 400));
+            throw new FileValidationError('File has no buffer or path for validation', 400);
         }
         
         // Skip if we can't determine the MIME type
@@ -245,28 +246,28 @@ export const validateMagicNumber = (
             if (MAGIC_NUMBERS[file.mimetype]) {
                 try {
                     if (!checkMagicNumber(buffer, file.mimetype)) {
-                        return next(new FileValidationError(
+                        throw new FileValidationError(
                             `File content does not match its declared MIME type (${file.mimetype}). ` +
                             'The file may be corrupted or the wrong file type was uploaded.',
                             400
-                        ));
+                        );
                     }
                 } catch (error) {
                     console.error('Error during magic number validation:', error);
-                    return next(new FileValidationError(
+                    throw new FileValidationError(
                         'Failed to validate file content. Please check the file and try again.',
                         400
-                    ));
+                    );
                 }
             }
         } catch (error) {
             if (error instanceof FileValidationError) {
-                return next(error);
+                throw error;
             }
-            return next(new FileValidationError(
+            throw new FileValidationError(
                 `Error validating file: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 500
-            ));
+            );
         }
     }
     
@@ -306,17 +307,17 @@ export const localFileUpload = ({
             const maxSize = validation?.maxSize || 5 * 1024 * 1024;
             
             if (!file) {
-                return cb(new Error('No file provided'));
+                return cb(new BadReqException('No file provided'));
             }
             
             // Check MIME type if allowedMimeTypes is specified
             if (allowedMimeTypes.length > 0 && !allowedMimeTypes.includes(file.mimetype)) {
-                return cb(new Error(`Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`));
+                return cb(new BadReqException(`Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`));
             }
             
             // Check file size from content-length header
             if (req.headers['content-length'] && parseInt(req.headers['content-length']) > maxSize) {
-                return cb(new Error(`File too large. Maximum size is ${maxSize / (1024 * 1024)}MB`));
+                return cb(new BadReqException(`File too large. Maximum size is ${maxSize / (1024 * 1024)}MB`));
             }
             
             // File passes initial validation
@@ -418,7 +419,7 @@ export const secureFileUpload = ({
             }
             next();
         } catch (error) {
-            next(error);
+            throw error as Error;
         }
     };
 
@@ -458,7 +459,7 @@ export const secureFileUpload = ({
             }
             next();
         } catch (e) {
-            next(e as Error);
+            throw e as Error;
         }
     };
 
