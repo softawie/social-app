@@ -9,6 +9,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { getRouteLogger } from "@utils/logger/logger";
 import { structuredLoggerMiddleware } from "@utils/logger/structured-logger";
+import { startSuccessLogsCleanupJob } from "@src/jobs/logs.cleanup.job";
 
 const limitRequest = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -23,6 +24,8 @@ const bootstrap = async (app: Express) => {
   app.use(structuredLoggerMiddleware);
   
   await CheckDB();
+  // Start daily cleanup job (deletes success logs at 21:00 local time)
+  startSuccessLogsCleanupJob();
   app.use("/uploads", express.static("./src/uploads"));
   
   // Use getRouteLogger for auth routes (this will mount the authRouter with logging)

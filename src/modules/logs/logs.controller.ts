@@ -7,7 +7,7 @@ import path from "node:path";
 const logsRouter = Router();
 
 // GET /logs - Retrieve logs with pagination and filtering
-logsRouter.get("/logs", (req: Request, res: Response) => {
+logsRouter.get("/logs", async (req: Request, res: Response) => {
   try {
     const {
       limit = "50",
@@ -21,32 +21,32 @@ logsRouter.get("/logs", (req: Request, res: Response) => {
     const limitNum = parseInt(limit as string);
     const offsetNum = parseInt(offset as string);
 
-    let result;
+    let result: { logs: any[]; total: number };
 
     // Apply filters if provided
     if (startDate && endDate) {
       const start = new Date(startDate as string);
       const end = new Date(endDate as string);
-      const filteredLogs = structuredLogger.getLogsByDateRange(start, end);
+      const filteredLogs = await structuredLogger.getLogsByDateRange(start, end);
       result = {
         logs: filteredLogs.slice(offsetNum, offsetNum + limitNum),
         total: filteredLogs.length
       };
     } else if (method) {
-      const filteredLogs = structuredLogger.getLogsByMethod(method as string);
+      const filteredLogs = await structuredLogger.getLogsByMethod(method as string);
       result = {
         logs: filteredLogs.slice(offsetNum, offsetNum + limitNum),
         total: filteredLogs.length
       };
     } else if (status) {
       const statusNum = parseInt(status as string);
-      const filteredLogs = structuredLogger.getLogsByStatus(statusNum);
+      const filteredLogs = await structuredLogger.getLogsByStatus(statusNum);
       result = {
         logs: filteredLogs.slice(offsetNum, offsetNum + limitNum),
         total: filteredLogs.length
       };
     } else {
-      result = structuredLogger.getLogs(limitNum, offsetNum);
+      result = await structuredLogger.getLogs(limitNum, offsetNum);
     }
 
     SucRes({
@@ -68,7 +68,7 @@ logsRouter.get("/logs", (req: Request, res: Response) => {
 });
 
 // GET /logs/:id - Get a specific log by ID
-logsRouter.get("/logs/:id", (req: Request, res: Response) => {
+logsRouter.get("/logs/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const logId = parseInt(id);
@@ -79,7 +79,7 @@ logsRouter.get("/logs/:id", (req: Request, res: Response) => {
       });
     }
     
-    const log = structuredLogger.getLogById(logId);
+    const log = await structuredLogger.getLogById(logId);
     
     if (!log) {
       return res.status(404).json({ 
@@ -102,9 +102,9 @@ logsRouter.get("/logs/:id", (req: Request, res: Response) => {
 });
 
 // GET /logs/stats - Get log statistics
-logsRouter.get("/logs/stats", (req: Request, res: Response) => {
+logsRouter.get("/logs/stats", async (req: Request, res: Response) => {
   try {
-    const { logs } = structuredLogger.getLogs();
+    const { logs } = await structuredLogger.getLogs();
     
     const stats = {
       total: logs.length,
@@ -158,9 +158,9 @@ logsRouter.get("/logs/stats", (req: Request, res: Response) => {
 });
 
 // DELETE /logs - Clear all logs (admin only)
-logsRouter.delete("/logs", (req: Request, res: Response) => {
+logsRouter.delete("/logs", async (req: Request, res: Response) => {
   try {
-    structuredLogger.clearLogs();
+    await structuredLogger.clearLogs();
     SucRes({
       res,
       statusCode: 200,
@@ -172,13 +172,11 @@ logsRouter.delete("/logs", (req: Request, res: Response) => {
 });
 
 // GET /logs/export - Export logs as JSON
-logsRouter.get("/logs/export", (req: Request, res: Response) => {
+logsRouter.get("/logs/export", async (req: Request, res: Response) => {
   try {
-    const { logs } = structuredLogger.getLogs();
-    
+    const { logs } = await structuredLogger.getLogs();
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename="logs-${new Date().toISOString().split('T')[0]}.json"`);
-    
     res.json(logs);
   } catch (error) {
     res.status(500).json({ message: "Error exporting logs", error: (error as Error).message });
