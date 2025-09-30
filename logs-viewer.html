@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Logs Viewer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+        input, select, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border-left: 4px solid #007bff;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .logs-table th,
+        .logs-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .logs-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #555;
+        }
+        .logs-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-2xx { background-color: #d4edda; color: #155724; }
+        .status-3xx { background-color: #fff3cd; color: #856404; }
+        .status-4xx { background-color: #f8d7da; color: #721c24; }
+        .status-5xx { background-color: #f5c6cb; color: #721c24; }
+        .method-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .method-GET { background-color: #28a745; }
+        .method-POST { background-color: #007bff; }
+        .method-PUT { background-color: #ffc107; color: #212529; }
+        .method-DELETE { background-color: #dc3545; }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .clickable-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .clickable-row:hover {
+            background-color: #e3f2fd !important;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 1400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        /* Wider screens support */
+        @media (min-width: 1600px) {
+            .modal-content { max-width: 1600px; }
+        }
+        /* Small screens tweaks */
+        @media (max-width: 600px) {
+            .modal-content { width: 98%; margin: 1% auto; }
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+        .close:hover {
+            color: #000;
+        }
+        .detail-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .detail-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .detail-content {
+            font-family: 'Courier New', monospace;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .json-content {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        /* JSON Syntax Highlighting - VS Code style */
+        .json-key {
+            color: #0451a5;
+            font-weight: bold;
+        }
+        .json-string {
+            color: #a31515;
+        }
+        .json-number {
+            color: #098658;
+        }
+        .json-boolean {
+            color: #0000ff;
+        }
+        .json-null {
+            color: #0000ff;
+        }
+        .json-punctuation {
+            color: #000000;
+        }
+        .json-brace {
+            color: #000000;
+            font-weight: bold;
+        }
+        
+        /* Special highlighting for error keys */
+        .error-message-key {
+            color: #d73a49 !important;
+            font-weight: bold;
+            background-color: #ffeef0;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .error-stack-key {
+            color: #e36209 !important;
+            font-weight: bold;
+            background-color: #fff8f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .error-message-value {
+            color: #d73a49;
+            font-weight: 500;
+        }
+        .error-stack-value {
+            color: #6f42c1;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        /* Search functionality styles */
+        .modal-search {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        .search-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-info {
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .search-highlight {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+        .search-highlight.current {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .search-btn {
+            padding: 4px 8px;
+            border: 1px solid #ced4da;
+            background-color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .search-btn:hover {
+            background-color: #e9ecef;
+        }
+        .search-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 API Logs Viewer</h1>
+        
+        <div class="stats" id="stats">
+            <!-- Stats will be loaded here -->
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="methodFilter">Method:</label>
+                <select id="methodFilter">
+                    <option value="">All Methods</option>
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="statusFilter">Status:</label>
+                <select id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="200">200 OK</option>
+                    <option value="201">201 Created</option>
+                    <option value="400">400 Bad Request</option>
+                    <option value="401">401 Unauthorized</option>
+                    <option value="404">404 Not Found</option>
+                    <option value="500">500 Server Error</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="limitFilter">Limit:</label>
+                <select id="limitFilter">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50" selected>50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <button onclick="loadLogs()">🔄 Refresh</button>
+            <button onclick="clearLogs()" style="background-color: #dc3545;">🗑️ Clear Logs</button>
+            <button onclick="exportLogs()" style="background-color: #28a745;">📥 Export</button>
+            <button onclick="testEnhancedLogging()" style="background-color: #17a2b8;">🧪 Test Enhanced Logging</button>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="loading" class="loading" style="display: none;">Loading...</div>
+
+        <table class="logs-table" id="logsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>Method</th>
+                    <th>URL</th>
+                    <th>Status</th>
+                    <th>Response Time</th>
+                    <th>IP</th>
+                    <th>User Agent</th>
+                </tr>
+            </thead>
+            <tbody id="logsBody">
+                <!-- Logs will be loaded here -->
+            </tbody>
+        </table>
+
+        <div class="pagination" id="pagination">
+            <!-- Pagination will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Modal for log details -->
+    <div id="logModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>📋 Request Details</h2>
+            
+            <!-- Search functionality -->
+            <div class="modal-search">
+                <input type="text" id="modalSearchInput" class="search-input" placeholder="Search in request details..." onkeyup="handleSearchKeyup(event)">
+                <div class="search-controls">
+                    <button class="search-btn" onclick="searchInModal('prev')" id="searchPrevBtn">↑ Previous</button>
+                    <button class="search-btn" onclick="searchInModal('next')" id="searchNextBtn">↓ Next</button>
+                    <button class="search-btn" onclick="clearSearch()">✕ Clear</button>
+                    <span class="search-info" id="searchInfo">Enter text to search</span>
+                </div>
+            </div>
+            
+            <div id="modalContent">
+                <!-- Modal content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let currentOffset = 0;
+
+        // JSON Syntax Highlighting Functions
+        function highlightJSON(jsonString, isError = false) {
+            try {
+                const obj = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+                return formatJSONObject(obj, 0, isError);
+            } catch (e) {
+                return escapeHtml(jsonString);
+            }
+        }
+
+        function formatJSONObject(obj, indent = 0, isError = false) {
+            const indentStr = '  '.repeat(indent);
+            const nextIndentStr = '  '.repeat(indent + 1);
+
+            if (obj === null) {
+                return '<span class="json-null">null</span>';
+            }
+
+            if (typeof obj === 'boolean') {
+                return `<span class="json-boolean">${obj}</span>`;
+            }
+
+            if (typeof obj === 'number') {
+                return `<span class="json-number">${obj}</span>`;
+            }
+
+            if (typeof obj === 'string') {
+                return `<span class="json-string">"${escapeHtml(obj)}"</span>`;
+            }
+
+            if (Array.isArray(obj)) {
+                if (obj.length === 0) return '<span class="json-brace">[]</span>';
+                
+                let result = '<span class="json-brace">[</span>\n';
+                obj.forEach((item, index) => {
+                    result += nextIndentStr + formatJSONObject(item, indent + 1, isError);
+                    if (index < obj.length - 1) result += '<span class="json-punctuation">,</span>';
+                    result += '\n';
+                });
+                result += indentStr + '<span class="json-brace">]</span>';
+                return result;
+            }
+
+            if (typeof obj === 'object') {
+                const keys = Object.keys(obj);
+                if (keys.length === 0) return '<span class="json-brace">{}</span>';
+
+                let result = '<span class="json-brace">{</span>\n';
+                keys.forEach((key, index) => {
+                    const keyClass = getKeyClass(key, isError);
+                    const valueClass = getValueClass(key, isError);
+                    
+                    result += nextIndentStr + `<span class="${keyClass}">"${escapeHtml(key)}"</span><span class="json-punctuation">: </span>`;
+                    
+                    if (valueClass && typeof obj[key] === 'string') {
+                        result += `<span class="${valueClass}">"${escapeHtml(obj[key])}"</span>`;
+                    } else {
+                        result += formatJSONObject(obj[key], indent + 1, isError);
+                    }
+                    
+                    if (index < keys.length - 1) result += '<span class="json-punctuation">,</span>';
+                    result += '\n';
+                });
+                result += indentStr + '<span class="json-brace">}</span>';
+                return result;
+            }
+
+            return escapeHtml(String(obj));
+        }
+
+        function getKeyClass(key, isError) {
+            if (isError) {
+                if (key === 'message') return 'error-message-key';
+                if (key === 'stack') return 'error-stack-key';
+            }
+            return 'json-key';
+        }
+
+        function getValueClass(key, isError) {
+            if (isError) {
+                if (key === 'message') return 'error-message-value';
+                if (key === 'stack') return 'error-stack-value';
+            }
+            return null;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Search functionality variables
+        let searchMatches = [];
+        let currentSearchIndex = -1;
+        let originalModalContent = '';
+
+        // Search functions
+        function handleSearchKeyup(event) {
+            if (event.key === 'Enter') {
+                searchInModal('next');
+            } else if (event.key === 'Escape') {
+                clearSearch();
+            } else {
+                performSearch();
+            }
+        }
+
+        function performSearch() {
+            const searchTerm = document.getElementById('modalSearchInput').value.trim();
+            const modalContent = document.getElementById('modalContent');
+            
+            if (!searchTerm) {
+                clearSearch();
+                return;
+            }
+
+            // Store original content if not already stored
+            if (!originalModalContent) {
+                originalModalContent = modalContent.innerHTML;
+            }
+
+            // Remove previous highlights
+            modalContent.innerHTML = originalModalContent;
+
+            // Find all matches
+            searchMatches = [];
+            const walker = document.createTreeWalker(
+                modalContent,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+
+            const textNodes = [];
+            let node;
+            while (node = walker.nextNode()) {
+                textNodes.push(node);
+            }
+
+            // Search in text nodes
+            textNodes.forEach((textNode, nodeIndex) => {
+                const text = textNode.textContent;
+                const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    searchMatches.push({
+                        node: textNode,
+                        start: match.index,
+                        end: match.index + searchTerm.length,
+                        nodeIndex: nodeIndex
+                    });
+                }
+            });
+
+            // Highlight all matches
+            highlightMatches();
+            updateSearchInfo();
+            
+            if (searchMatches.length > 0) {
+                currentSearchIndex = 0;
+                scrollToCurrentMatch();
+            }
+        }
+
+        function highlightMatches() {
+            // Process matches in reverse order to maintain indices
+            const processedNodes = new Map();
+            
+            searchMatches.reverse().forEach((match, index) => {
+                const { node, start, end } = match;
+                const text = node.textContent;
+                
+                if (!processedNodes.has(node)) {
+                    processedNodes.set(node, []);
+                }
+                processedNodes.get(node).push({ start, end, index: searchMatches.length - 1 - index });
+            });
+
+            processedNodes.forEach((matches, node) => {
+                let newHTML = '';
+                let lastIndex = 0;
+                const text = node.textContent;
+
+                matches.sort((a, b) => a.start - b.start).forEach(match => {
+                    newHTML += escapeHtml(text.substring(lastIndex, match.start));
+                    newHTML += `<span class="search-highlight" data-search-index="${match.index}">${escapeHtml(text.substring(match.start, match.end))}</span>`;
+                    lastIndex = match.end;
+                });
+                newHTML += escapeHtml(text.substring(lastIndex));
+
+                const wrapper = document.createElement('span');
+                wrapper.innerHTML = newHTML;
+                node.parentNode.replaceChild(wrapper, node);
+            });
+
+            searchMatches.reverse(); // Restore original order
+        }
+
+        function searchInModal(direction) {
+            if (searchMatches.length === 0) {
+                performSearch();
+                return;
+            }
+
+            // Remove current highlight
+            const currentHighlight = document.querySelector('.search-highlight.current');
+            if (currentHighlight) {
+                currentHighlight.classList.remove('current');
+            }
+
+            // Move to next/previous match
+            if (direction === 'next') {
+                currentSearchIndex = (currentSearchIndex + 1) % searchMatches.length;
+            } else {
+                currentSearchIndex = currentSearchIndex <= 0 ? searchMatches.length - 1 : currentSearchIndex - 1;
+            }
+
+            scrollToCurrentMatch();
+        }
+
+        function scrollToCurrentMatch() {
+            if (currentSearchIndex >= 0 && currentSearchIndex < searchMatches.length) {
+                const highlights = document.querySelectorAll('.search-highlight');
+                const currentHighlight = highlights[currentSearchIndex];
+                
+                if (currentHighlight) {
+                    // Remove previous current class
+                    highlights.forEach(h => h.classList.remove('current'));
+                    
+                    // Add current class to active highlight
+                    currentHighlight.classList.add('current');
+                    
+                    // Scroll to the element
+                    currentHighlight.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+            updateSearchInfo();
+        }
+
+        function updateSearchInfo() {
+            const searchInfo = document.getElementById('searchInfo');
+            const prevBtn = document.getElementById('searchPrevBtn');
+            const nextBtn = document.getElementById('searchNextBtn');
+            
+            if (searchMatches.length === 0) {
+                const searchTerm = document.getElementById('modalSearchInput').value.trim();
+                searchInfo.textContent = searchTerm ? 'No matches found' : 'Enter text to search';
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+            } else {
+                searchInfo.textContent = `${currentSearchIndex + 1} of ${searchMatches.length} matches`;
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
+            }
+        }
+
+        function clearSearch() {
+            const modalContent = document.getElementById('modalContent');
+            const searchInput = document.getElementById('modalSearchInput');
+            
+            if (originalModalContent) {
+                modalContent.innerHTML = originalModalContent;
+            }
+            
+            searchInput.value = '';
+            searchMatches = [];
+            currentSearchIndex = -1;
+            originalModalContent = '';
+            updateSearchInfo();
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/logs/stats`);
+                const data = await response.json();
+                
+                if (data.data) {
+                    const stats = data.data;
+                    document.getElementById('stats').innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.total}</div>
+                            <div class="stat-label">Total Requests</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.averageResponseTime}ms</div>
+                            <div class="stat-label">Avg Response Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.errorRate}%</div>
+                            <div class="stat-label">Error Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.totalRequests24h}</div>
+                            <div class="stat-label">Last 24h</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadLogs(offset = 0) {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const logsBody = document.getElementById('logsBody');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            
+            try {
+                const method = document.getElementById('methodFilter').value;
+                const status = document.getElementById('statusFilter').value;
+                const limit = document.getElementById('limitFilter').value;
+                
+                let url = `${API_BASE}/logs?limit=${limit}&offset=${offset}`;
+                if (method) url += `&method=${method}`;
+                if (status) url += `&status=${status}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.data && data.data.logs) {
+                    currentOffset = offset;
+                    renderLogs(data.data.logs);
+                    renderPagination(data.data.pagination, data.data.total);
+                } else {
+                    throw new Error(data.message || 'Failed to load logs');
+                }
+            } catch (err) {
+                error.textContent = `Error: ${err.message}`;
+                error.style.display = 'block';
+                logsBody.innerHTML = '<tr><td colspan="8">Failed to load logs</td></tr>';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function renderLogs(logs) {
+            const logsBody = document.getElementById('logsBody');
+            
+            if (logs.length === 0) {
+                logsBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No logs found</td></tr>';
+                return;
+            }
+            
+            logsBody.innerHTML = logs.map(log => `
+                <tr class="clickable-row" onclick="showLogDetails(${log.id})" title="Click to view details">
+                    <td>${log.id}</td>
+                    <td>${new Date(log.timestamp).toLocaleString()}</td>
+                    <td><span class="method-badge method-${log.method}">${log.method}</span></td>
+                    <td>${log.url}</td>
+                    <td><span class="status-badge status-${Math.floor(log.status/100)}xx">${log.status}</span></td>
+                    <td>${log.responseTime}ms</td>
+                    <td>${log.ip}</td>
+                    <td title="${log.userAgent}">${log.userAgent.substring(0, 30)}${log.userAgent.length > 30 ? '...' : ''}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPagination(pagination, total) {
+            const paginationDiv = document.getElementById('pagination');
+            const { limit, offset, hasMore } = pagination;
+            
+            let html = '';
+            
+            if (offset > 0) {
+                html += `<button onclick="loadLogs(${Math.max(0, offset - limit)})">← Previous</button>`;
+            }
+            
+            html += `<span>Showing ${offset + 1}-${Math.min(offset + limit, total)} of ${total}</span>`;
+            
+            if (hasMore) {
+                html += `<button onclick="loadLogs(${offset + limit})">Next →</button>`;
+            }
+            
+            paginationDiv.innerHTML = html;
+        }
+
+        async function clearLogs() {
+            if (!confirm('Are you sure you want to clear all logs? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/logs`, { method: 'DELETE' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Logs cleared successfully');
+                    loadLogs();
+                    loadStats();
+                } else {
+                    throw new Error(data.message || 'Failed to clear logs');
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        async function exportLogs() {
+            try {
+                const response = await fetch(`${API_BASE}/logs/export`);
+                const blob = await response.blob();
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `logs-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                alert(`Error exporting logs: ${error.message}`);
+            }
+        }
+
+        async function testEnhancedLogging() {
+            try {
+                // Make a test POST request to generate a log with detailed information
+                const testData = {
+                    test: true,
+                    timestamp: new Date().toISOString(),
+                    message: "Testing enhanced logging functionality"
+                };
+
+                const response = await fetch('http://localhost:3000/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Test-Header': 'Enhanced-Logging-Test'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                // Wait a moment for the log to be processed
+                setTimeout(() => {
+                    loadLogs();
+                    alert('Test request sent! Check the latest log entry to see enhanced logging in action.');
+                }, 500);
+
+            } catch (error) {
+                alert(`Error testing enhanced logging: ${error.message}`);
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadLogs(currentOffset);
+            loadStats();
+        }, 30000);
+
+        // Add event listeners for automatic filtering
+        function setupFilterListeners() {
+            const methodFilter = document.getElementById('methodFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const limitFilter = document.getElementById('limitFilter');
+
+            // Add change event listeners to all filters
+            methodFilter.addEventListener('change', () => {
+                currentOffset = 0; // Reset to first page when filter changes
+                loadLogs(0);
+            });
+
+            statusFilter.addEventListener('change', () => {
+                currentOffset = 0; // Reset to first page when filter changes
+                loadLogs(0);
+            });
+
+            limitFilter.addEventListener('change', () => {
+                currentOffset = 0; // Reset to first page when limit changes
+                loadLogs(0);
+            });
+        }
+
+        // Modal functions
+        async function showLogDetails(logId) {
+            try {
+                const response = await fetch(`${API_BASE}/logs/${logId}`);
+                const data = await response.json();
+                
+                if (data.data) {
+                    const log = data.data;
+                    displayLogModal(log);
+                } else {
+                    throw new Error(data.message || 'Failed to load log details');
+                }
+            } catch (error) {
+                alert(`Error loading log details: ${error.message}`);
+            }
+        }
+
+        function displayLogModal(log) {
+            const modal = document.getElementById('logModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            // Reset search when opening new modal
+            clearSearch();
+            
+            // Format the log data for display with syntax highlighting
+            const requestHeaders = log.requestHeaders && Object.keys(log.requestHeaders).length > 0 
+                ? highlightJSON(log.requestHeaders)
+                : 'No request headers captured (this log was created before detailed logging was enabled)';
+            
+            const responseHeaders = log.responseHeaders && Object.keys(log.responseHeaders).length > 0 
+                ? highlightJSON(log.responseHeaders)
+                : 'No response headers captured (this log was created before detailed logging was enabled)';
+            
+            const requestBody = log.requestBody && Object.keys(log.requestBody || {}).length > 0
+                ? highlightJSON(log.requestBody)
+                : log.method === 'GET' ? 'GET requests typically have no body' : 'No request body captured';
+            
+            const responseBody = log.responseBody 
+                ? highlightJSON(log.responseBody, log.status >= 400) // Mark as error if status >= 400
+                : 'No response body captured (this log was created before detailed logging was enabled)';
+            
+            const errorDetails = log.error 
+                ? highlightJSON(log.error, true) // Always mark error section as error
+                : null;
+            
+            modalContent.innerHTML = `
+                ${!log.requestHeaders || Object.keys(log.requestHeaders).length === 0 ? `
+                <div class="detail-section" style="border-left-color: #ffc107; background-color: #fff3cd;">
+                    <div class="detail-title">ℹ️ Enhanced Logging Notice</div>
+                    <div class="detail-content" style="color: #856404;">
+This log entry was created before enhanced logging was enabled. 
+To see detailed request/response data, make new API requests after restarting the server.
+New logs will include headers, request/response bodies, and error details.
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="detail-section">
+                    <div class="detail-title">🔍 Basic Information</div>
+                    <div class="detail-content">
+ID: ${log.id}
+Timestamp: ${new Date(log.timestamp).toLocaleString()}
+Method: ${log.method}
+URL: ${log.url}
+Status: ${log.status}
+Response Time: ${log.responseTime}ms
+IP Address: ${log.ip}
+User Agent: ${log.userAgent}
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">📤 Request Headers</div>
+                    <div class="detail-content json-content">${requestHeaders}</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">📥 Response Headers</div>
+                    <div class="detail-content json-content">${responseHeaders}</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">📝 Request Body</div>
+                    <div class="detail-content json-content">${requestBody}</div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">📋 Response Body</div>
+                    <div class="detail-content json-content">${responseBody}</div>
+                </div>
+
+                ${errorDetails ? `
+                <div class="detail-section" style="border-left-color: #dc3545;">
+                    <div class="detail-title">❌ Error Details</div>
+                    <div class="detail-content json-content">${errorDetails}</div>
+                </div>
+                ` : ''}
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('logModal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('logModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadLogs();
+            setupFilterListeners(); // Setup automatic filtering
+        });
+    </script>
+</body>
+</html>

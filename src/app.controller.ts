@@ -2,11 +2,14 @@ import express, { Express} from "express";
 import { CheckDB } from "@db/connectionDB";
 import userRouter from "@modules/users/user.controller";
 import authRouter from "@modules/auth/auth.controller";
+import logsRouter from "@modules/logs/logs.controller";
 import { globalErrorHandler, NotFoundException } from "@utils/globalError.handler";
 import * as cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { getRouteLogger } from "@utils/logger/logger";
+import { structuredLoggerMiddleware } from "@utils/logger/structured-logger";
+import { startSuccessLogsCleanupJob } from "@src/jobs/logs.cleanup.job";
 
 const limitRequest = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -16,11 +19,22 @@ const limitRequest = rateLimit({
 
 const bootstrap = async (app: Express) => {
   app.use(cors.default(),express.json(),helmet(),limitRequest)
+  
+  // Add structured logging middleware for all routes
+  app.use(structuredLoggerMiddleware);
+  
   await CheckDB();
+  // Start daily cleanup job (deletes success logs at 21:00 local time)
+  startSuccessLogsCleanupJob();
   app.use("/uploads", express.static("./src/uploads"));
+  
+  // Use getRouteLogger for auth routes (this will mount the authRouter with logging)
+  // Mount auth routes before user routes to avoid conflicts
+  
   app.use("/", userRouter);
-  getRouteLogger(app,"/login",authRouter,"login.log");
-  app.use("/", authRouter);
+  getRouteLogger(app,"/",authRouter,"login.log");
+
+  app.use("/api", logsRouter);
   
   // not found route
   app.all("/*dummy", (req, res, next) => {
