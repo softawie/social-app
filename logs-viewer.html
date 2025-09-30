@@ -31,6 +31,19 @@
             flex-wrap: wrap;
             align-items: center;
         }
+        .token-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .token-input {
+            min-width: 320px;
+        }
+        .token-status {
+            font-size: 12px;
+            color: #666;
+        }
         .filter-group {
             display: flex;
             flex-direction: column;
@@ -365,6 +378,13 @@
             <button onclick="clearLogs()" style="background-color: #dc3545;">🗑️ Clear Logs</button>
             <button onclick="exportLogs()" style="background-color: #28a745;">📥 Export</button>
             <button onclick="testEnhancedLogging()" style="background-color: #17a2b8;">🧪 Test Enhanced Logging</button>
+
+            <div class="token-group">
+                <input id="adminTokenInput" class="token-input" type="password" placeholder="Paste admin access token (JWT)" />
+                <button onclick="saveAdminToken()">Save Token</button>
+                <button onclick="clearAdminToken()" style="background-color:#6c757d;">Clear</button>
+                <span id="tokenStatus" class="token-status">Token: not set</span>
+            </div>
         </div>
 
         <div id="error" class="error" style="display: none;"></div>
@@ -419,6 +439,46 @@
     <script>
         const API_BASE = 'http://localhost:3000/api';
         let currentOffset = 0;
+        let ADMIN_TOKEN = localStorage.getItem('admin_token') || '';
+
+        // Admin token helpers
+        function updateTokenStatus() {
+            const el = document.getElementById('tokenStatus');
+            if (!el) return;
+            el.textContent = ADMIN_TOKEN ? 'Token: set' : 'Token: not set';
+            el.style.color = ADMIN_TOKEN ? '#28a745' : '#666';
+        }
+
+        function saveAdminToken() {
+            const input = document.getElementById('adminTokenInput');
+            ADMIN_TOKEN = (input?.value || '').trim();
+            if (!ADMIN_TOKEN) {
+                alert('Please paste a valid admin access token (JWT).');
+                return;
+            }
+            localStorage.setItem('admin_token', ADMIN_TOKEN);
+            updateTokenStatus();
+            // Try loading immediately
+            loadStats();
+            loadLogs();
+        }
+
+        function clearAdminToken() {
+            localStorage.removeItem('admin_token');
+            ADMIN_TOKEN = '';
+            const input = document.getElementById('adminTokenInput');
+            if (input) input.value = '';
+            updateTokenStatus();
+        }
+
+        function authFetch(url, options = {}) {
+            if (!ADMIN_TOKEN) {
+                throw new Error('Admin token not set');
+            }
+            // Use 'admin' bearer scheme to align with verifyToken expectations
+            const headers = Object.assign({}, options.headers || {}, { Authorization: `admin ${ADMIN_TOKEN}` });
+            return fetch(url, Object.assign({}, options, { headers }));
+        }
 
         // JSON Syntax Highlighting Functions
         function highlightJSON(jsonString, isError = false) {
@@ -701,7 +761,7 @@
 
         async function loadStats() {
             try {
-                const response = await fetch(`${API_BASE}/logs/stats`);
+                const response = await authFetch(`${API_BASE}/logs/stats`);
                 const data = await response.json();
                 
                 if (data.data) {
@@ -747,7 +807,7 @@
                 if (method) url += `&method=${method}`;
                 if (status) url += `&status=${status}`;
                 
-                const response = await fetch(url);
+                const response = await authFetch(url);
                 const data = await response.json();
                 
                 if (data.data && data.data.logs) {
@@ -813,7 +873,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/logs`, { method: 'DELETE' });
+                const response = await authFetch(`${API_BASE}/logs`, { method: 'DELETE' });
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -830,7 +890,7 @@
 
         async function exportLogs() {
             try {
-                const response = await fetch(`${API_BASE}/logs/export`);
+                const response = await authFetch(`${API_BASE}/logs/export`);
                 const blob = await response.blob();
                 
                 const url = window.URL.createObjectURL(blob);
@@ -907,7 +967,7 @@
         // Modal functions
         async function showLogDetails(logId) {
             try {
-                const response = await fetch(`${API_BASE}/logs/${logId}`);
+                const response = await authFetch(`${API_BASE}/logs/${logId}`);
                 const data = await response.json();
                 
                 if (data.data) {
@@ -1028,6 +1088,10 @@ User Agent: ${log.userAgent}
 
         // Initial load
         document.addEventListener('DOMContentLoaded', () => {
+            // Prefill token input from storage
+            const input = document.getElementById('adminTokenInput');
+            if (input && ADMIN_TOKEN) input.value = ADMIN_TOKEN;
+            updateTokenStatus();
             loadStats();
             loadLogs();
             setupFilterListeners(); // Setup automatic filtering

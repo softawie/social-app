@@ -1,10 +1,16 @@
 import { Router, Request, Response } from "express";
 import { structuredLogger } from "@utils/logger/structured-logger";
 import { SucRes } from "@utils/response.handler";
+import { authenticationMiddleware, authorizationMiddleware } from "@src/MiddleWares/auth.middleware";
+import { UserRoles } from "@utils/enums";
 import fs from "node:fs";
 import path from "node:path";
 
 const logsRouter = Router();
+
+// Enforce admin-only access for all logs APIs
+logsRouter.use(authenticationMiddleware);
+logsRouter.use(authorizationMiddleware({ accessRoles: [UserRoles.ADMIN] }));
 
 // GET /logs - Retrieve logs with pagination and filtering
 logsRouter.get("/logs", async (req: Request, res: Response) => {
