@@ -2,7 +2,7 @@ import TokenModel from "@db/models/token.model";
 import UserModel, { IUser } from "@db/models/user.model";
 import { logger } from "@helpers/logger.helper";
 import { DecodedToken } from "@MiddleWares/auth.middleware";
-import { encrypt } from "@utils/encryptio.utils";
+import { encrypt, decrypt } from "@utils/encryptio.utils";
 import {
   EmailEventEnums,
   EmailSubjects,
@@ -75,6 +75,19 @@ const login = async (
 ): Promise<void> => {
   const { password, email }: ILoginDTO = req.body;
 
+  // Decrypt password if client sent AES cipher text
+  let plainPassword = password;
+  try {
+    // Attempt to decrypt; if it fails (e.g., plaintext provided), fall back
+    plainPassword = decrypt({ cipherText: password });
+    if (!plainPassword) {
+      // If decryption yields empty string, assume original was plaintext
+      plainPassword = password;
+    }
+  } catch {
+    plainPassword = password;
+  }
+
   // Check if user exists
   const user = await UserModel.findOne({ email });
   if (!user) {
@@ -84,7 +97,7 @@ const login = async (
     throw new AppException("User not found or Email not confirmed", 401);
   }
   const isMatched = await compare({
-    plainText: password,
+    plainText: plainPassword,
     hash: user.password,
   });
   if (!isMatched) {
@@ -281,8 +294,17 @@ const resetPassword = async (
   }
 
   // Enforce password history: reject if matches current or any previous
+  // Decrypt password if needed for comparisons
+  let plainResetPassword = password;
+  try {
+    plainResetPassword = decrypt({ cipherText: password });
+    if (!plainResetPassword) plainResetPassword = password;
+  } catch {
+    plainResetPassword = password;
+  }
+
   const matchesCurrent = await compare({
-    plainText: password,
+    plainText: plainResetPassword,
     hash: user.password,
   });
   if (matchesCurrent) {
@@ -292,7 +314,7 @@ const resetPassword = async (
   }
   if (Array.isArray(user.passwordHistory)) {
     for (const oldHash of user.passwordHistory) {
-      if (await compare({ plainText: password, hash: oldHash })) {
+      if (await compare({ plainText: plainResetPassword, hash: oldHash })) {
         throw new BadReqException(
           "New password cannot match any of your recent passwords"
         );
@@ -300,7 +322,7 @@ const resetPassword = async (
     }
   }
 
-  const hashedPassword = await hashing({ plainText: password });
+  const hashedPassword = await hashing({ plainText: plainResetPassword });
   // Build new password history (cap to last 5)
   const newHistory = [user.password, ...(user.passwordHistory || [])].slice(
     0,
