@@ -95,12 +95,57 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            table-layout: fixed; /* Enable fixed layout for better column control */
+            max-width: 100%; /* Ensure table doesn't exceed container */
+            overflow-x: auto; /* Add horizontal scroll if needed */
         }
         .logs-table th,
         .logs-table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        /* Column width controls */
+        .logs-table th:nth-child(1), .logs-table td:nth-child(1) { width: 60px; } /* ID */
+        .logs-table th:nth-child(2), .logs-table td:nth-child(2) { width: 140px; } /* Timestamp */
+        .logs-table th:nth-child(3), .logs-table td:nth-child(3) { width: 80px; } /* Method */
+        .logs-table th:nth-child(4), .logs-table td:nth-child(4) { 
+            width: 300px; /* URL column */
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: help; /* Indicate hoverable content */
+        }
+        .logs-table th:nth-child(5), .logs-table td:nth-child(5) { width: 80px; } /* Status */
+        .logs-table th:nth-child(6), .logs-table td:nth-child(6) { width: 100px; } /* Response Time */
+        .logs-table th:nth-child(7), .logs-table td:nth-child(7) { width: 100px; } /* IP */
+        .logs-table th:nth-child(8), .logs-table td:nth-child(8) { 
+            width: 200px; /* User Agent */
+            max-width: 200px;
+            min-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: help; /* Indicate hoverable content */
+        }
+        
+        /* URL and User Agent cell hover effects to show full content */
+        .logs-table td:nth-child(4):hover,
+        .logs-table td:nth-child(8):hover {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: initial;
+            background-color: #f0f8ff;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            max-width: none !important;
+            min-width: none !important;
+            width: auto !important;
         }
         .logs-table th {
             background-color: #f8f9fa;
@@ -332,6 +377,53 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        
+        /* Responsive design for smaller screens */
+        @media (max-width: 1200px) {
+            .logs-table th:nth-child(4), .logs-table td:nth-child(4) { 
+                width: 250px;
+                max-width: 250px;
+                min-width: 250px;
+            }
+            .logs-table th:nth-child(8), .logs-table td:nth-child(8) { 
+                width: 180px;
+                max-width: 180px;
+                min-width: 180px;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .logs-table th:nth-child(4), .logs-table td:nth-child(4) { 
+                width: 200px;
+                max-width: 200px;
+                min-width: 200px;
+            }
+            .logs-table th:nth-child(8), .logs-table td:nth-child(8) { 
+                width: 150px;
+                max-width: 150px;
+                min-width: 150px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .logs-table {
+                font-size: 12px;
+            }
+            .logs-table th,
+            .logs-table td {
+                padding: 8px 4px;
+            }
+            .logs-table th:nth-child(4), .logs-table td:nth-child(4) { 
+                width: 180px;
+                max-width: 180px;
+                min-width: 180px;
+            }
+            /* Hide less important columns on mobile */
+            .logs-table th:nth-child(7), .logs-table td:nth-child(7),
+            .logs-table th:nth-child(8), .logs-table td:nth-child(8) {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -390,6 +482,7 @@
         <div id="error" class="error" style="display: none;"></div>
         <div id="loading" class="loading" style="display: none;">Loading...</div>
 
+        <div style="overflow-x: auto; max-width: 100%;">
         <table class="logs-table" id="logsTable">
             <thead>
                 <tr>
@@ -407,6 +500,7 @@
                 <!-- Logs will be loaded here -->
             </tbody>
         </table>
+        </div>
 
         <div class="pagination" id="pagination">
             <!-- Pagination will be loaded here -->
@@ -835,17 +929,17 @@
             }
             
             logsBody.innerHTML = logs.map(log => `
-                <tr class="clickable-row" onclick="showLogDetails(${log.id})" title="Click to view details">
-                    <td>${log.id}</td>
-                    <td>${new Date(log.timestamp).toLocaleString()}</td>
-                    <td><span class="method-badge method-${log.method}">${log.method}</span></td>
-                    <td>${log.url}</td>
-                    <td><span class="status-badge status-${Math.floor(log.status/100)}xx">${log.status}</span></td>
-                    <td>${log.responseTime}ms</td>
-                    <td>${log.ip}</td>
-                    <td title="${log.userAgent}">${log.userAgent.substring(0, 30)}${log.userAgent.length > 30 ? '...' : ''}</td>
-                </tr>
-            `).join('');
+        <tr class="clickable-row" onclick="showLogDetails(${log.id})" title="Click to view details">
+            <td>${log.id}</td>
+            <td>${new Date(log.timestamp).toLocaleString()}</td>
+            <td><span class="method-badge method-${log.method}">${log.method}</span></td>
+            <td title="${log.url}">${log.url}</td>
+            <td><span class="status-badge status-${Math.floor(log.status/100)}xx">${log.status}</span></td>
+            <td>${log.responseTime}ms</td>
+            <td>${log.ip}</td>
+            <td title="${log.userAgent}">${log.userAgent.substring(0, 30)}${log.userAgent.length > 30 ? '...' : ''}</td>
+        </tr>
+    `).join('');
         }
 
         function renderPagination(pagination, total) {

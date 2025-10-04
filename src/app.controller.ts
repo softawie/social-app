@@ -32,9 +32,25 @@ const bootstrap = async (app: Express) => {
   // Mount auth routes before user routes to avoid conflicts
   
   app.use("/", userRouter);
-  getRouteLogger(app,"/",authRouter,"login.log");
+  getRouteLogger(app,"/auth",authRouter,"login.log");
 
   app.use("/api", logsRouter);
+  
+  // Public app config for static tools (e.g., logs viewer)
+  app.get("/app-config", (req, res) => {
+    const port = parseInt(process.env.PORT || '3000');
+    const baseUrl = process.env.APP_URL || `http://localhost:${port}`;
+    res.json({
+      baseUrl,
+      apiBase: `${baseUrl}/api`,
+    });
+  });
+
+  // Serve the logs viewer page
+  app.get("/logs-viewer", (req, res) => {
+    const filePath = require('node:path').resolve('logs-viewer.html');
+    return res.sendFile(filePath);
+  });
   
   // not found route
   app.all("/*dummy", (req, res, next) => {

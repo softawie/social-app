@@ -12,6 +12,62 @@ const logsRouter = Router();
 logsRouter.use(authenticationMiddleware);
 logsRouter.use(authorizationMiddleware({ accessRoles: [UserRoles.ADMIN] }));
 
+// GET /logs/stats - Get log statistics (must come before /logs/:id)
+logsRouter.get("/logs/stats", async (req: Request, res: Response) => {
+  try {
+    const { logs } = await structuredLogger.getLogs();
+    
+    const stats = {
+      total: logs.length,
+      methods: {} as Record<string, number>,
+      statusCodes: {} as Record<string, number>,
+      averageResponseTime: 0,
+      totalRequests24h: 0,
+      errorRate: 0
+    };
+
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    let totalResponseTime = 0;
+    let errorCount = 0;
+
+    logs.forEach(log => {
+      // Count methods
+      stats.methods[log.method] = (stats.methods[log.method] || 0) + 1;
+      
+      // Count status codes
+      const statusGroup = Math.floor(log.status / 100) + "xx";
+      stats.statusCodes[statusGroup] = (stats.statusCodes[statusGroup] || 0) + 1;
+      
+      // Calculate average response time
+      totalResponseTime += log.responseTime;
+      
+      // Count errors (4xx and 5xx)
+      if (log.status >= 400) {
+        errorCount++;
+      }
+      
+      // Count requests in last 24h
+      if (new Date(log.timestamp) >= yesterday) {
+        stats.totalRequests24h++;
+      }
+    });
+
+    stats.averageResponseTime = logs.length > 0 ? Math.round(totalResponseTime / logs.length) : 0;
+    stats.errorRate = logs.length > 0 ? Math.round((errorCount / logs.length) * 100) : 0;
+
+    SucRes({
+      res,
+      statusCode: 200,
+      message: "Log statistics retrieved successfully",
+      data: stats
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving log statistics", error: (error as Error).message });
+  }
+});
+
 // GET /logs - Retrieve logs with pagination and filtering
 logsRouter.get("/logs", async (req: Request, res: Response) => {
   try {
@@ -104,62 +160,6 @@ logsRouter.get("/logs/:id", async (req: Request, res: Response) => {
       message: "Error retrieving log", 
       error: (error as Error).message 
     });
-  }
-});
-
-// GET /logs/stats - Get log statistics
-logsRouter.get("/logs/stats", async (req: Request, res: Response) => {
-  try {
-    const { logs } = await structuredLogger.getLogs();
-    
-    const stats = {
-      total: logs.length,
-      methods: {} as Record<string, number>,
-      statusCodes: {} as Record<string, number>,
-      averageResponseTime: 0,
-      totalRequests24h: 0,
-      errorRate: 0
-    };
-
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    
-    let totalResponseTime = 0;
-    let errorCount = 0;
-
-    logs.forEach(log => {
-      // Count methods
-      stats.methods[log.method] = (stats.methods[log.method] || 0) + 1;
-      
-      // Count status codes
-      const statusGroup = Math.floor(log.status / 100) + "xx";
-      stats.statusCodes[statusGroup] = (stats.statusCodes[statusGroup] || 0) + 1;
-      
-      // Calculate average response time
-      totalResponseTime += log.responseTime;
-      
-      // Count errors (4xx and 5xx)
-      if (log.status >= 400) {
-        errorCount++;
-      }
-      
-      // Count requests in last 24h
-      if (new Date(log.timestamp) >= yesterday) {
-        stats.totalRequests24h++;
-      }
-    });
-
-    stats.averageResponseTime = logs.length > 0 ? Math.round(totalResponseTime / logs.length) : 0;
-    stats.errorRate = logs.length > 0 ? Math.round((errorCount / logs.length) * 100) : 0;
-
-    SucRes({
-      res,
-      statusCode: 200,
-      message: "Log statistics retrieved successfully",
-      data: stats
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Error retrieving log statistics", error: (error as Error).message });
   }
 });
 

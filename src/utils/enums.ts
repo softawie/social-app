@@ -37,4 +37,11 @@ export enum ValidationLocation {
 export enum EmailEventEnums{
   CONFIRM_EMAIL = 'confirmEmail',
   FORGET_PASSWORD = 'forgetPassword',
+  CONFIRM_EMAIL_TOKEN = 'confirmEmailToken',
+  FORGET_PASSWORD_TOKEN = 'forgetPasswordToken',
+}
+
+export enum VerificationMethod {
+  OTP = 'otp',
+  TOKEN = 'token',
 }
