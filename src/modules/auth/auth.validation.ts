@@ -28,14 +28,25 @@ const forgetPasswordValidation = z
 
 const resetPasswordValidation = z
   .object({
-    userId: generalValidations.userId,
+    userId: generalValidations.userId.optional(), // Optional for token method
     email: generalValidations.email,
-    code: generalValidations.code,
+    code: generalValidations.code.optional(), // Optional - either code or token required
+    token: z.string().optional(), // Optional - either code or token required
     password: generalValidations.password,
-    confirmPassword: generalValidations.confirmPassword,
+    confirmPassword: generalValidations.confirmPassword.optional(), // Make optional
   })
   .strip()
-  .refine((data: { password: string; confirmPassword: string }) => data.password === data.confirmPassword, {
+  .refine((data: { code?: string; token?: string }) => {
+    // Either code OR token must be provided, but not both
+    return (data.code && !data.token) || (!data.code && data.token);
+  }, {
+    message: "Please provide either OTP code or verification token (not both)",
+    path: ["code"]
+  })
+  .refine((data: { password: string; confirmPassword?: string }) => {
+    // If confirmPassword is provided, it must match password
+    return !data.confirmPassword || data.password === data.confirmPassword;
+  }, {
     path: ["confirmPassword"],
     message: "confirmPassword must match password",
   });

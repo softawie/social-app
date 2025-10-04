@@ -11,6 +11,7 @@ authRouter.post("/logout", authenticationMiddleware, authService.logout);
 authRouter.post("/social-login", authService.loginWithGmail);
 authRouter.post("/refresh-token",authenticationMiddleware, authService.refreshToken);
 authRouter.patch("/confirm-email",authService.confirmEmail);
+authRouter.get("/verify-email", authService.verifyEmailViaToken);
 authRouter.patch("/forget-password",validate(forgetPasswordValidation),authService.forgetPassword);
 authRouter.patch("/reset-password",validate(resetPasswordValidation),authService.resetPassword);
 
