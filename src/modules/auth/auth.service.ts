@@ -8,6 +8,7 @@ import {
   EmailSubjects,
   providersEnum,
   TokenType,
+  VerificationMethod,
 } from "@utils/enums";
 import { emailEvent } from "@utils/event.utils";
 import { hashing, compare } from "@utils/hash.utils";
@@ -21,13 +22,21 @@ import {
   BadReqException,
   NotFoundException,
 } from "@utils/globalError.handler";
-import { IConfirmEmailDTO, ILoginDTO, IResetPasswordDTO, ISignupDTO, User } from "./auth.dto";
+import { IConfirmEmailDTO, ILoginDTO, IResetPasswordDTO, ISignupDTO, IForgetPasswordDTO, IVerifyTokenDTO, User } from "./auth.dto";
+import { DatabaseRepo } from "@db/resposetories/database.repo";
+import { 
+  createVerificationToken, 
+  verifyToken as verifyVerificationToken,
+  generateVerificationUrl 
+} from "@utils/verification-token.utils";
+import { VerificationTokenType } from "@db/models/verification-token.model";
+import { verificationSuccessPage, verificationErrorPage } from "@utils/html/verification-views";
 
 const signup = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { firstName, lastName, password, email, age, phone, role }: ISignupDTO =
+  const { firstName, lastName, password, email, phone, role, verificationMethod = VerificationMethod.TOKEN }: ISignupDTO =
     req.body;
   const name = `${firstName} ${lastName}`;
   //check if user already exists
@@ -39,33 +48,72 @@ const signup = async (
   const hashedPassword = await hashing({ plainText: password });
   logger.log("Password hashed successfully");
   const encryptedPhone = encrypt({ plainText: phone });
-  // otp hashing
-  const code = customAlphabet("1234567890", 6)();
-  const hashedOtp = await hashing({ plainText: code });
+  
+  let hashedOtp: string | undefined;
+  let verificationToken: string | undefined;
 
+  // Always generate OTP for database storage
+  const code = customAlphabet("1234567890", 6)();
+  hashedOtp = await hashing({ plainText: code });
+
+  let verificationUrl: string | undefined;
+  
+  if (verificationMethod === VerificationMethod.TOKEN) {
+    // Token method - also create verification token
+    verificationToken = await createVerificationToken({
+      email,
+      type: VerificationTokenType.CONFIRM_EMAIL,
+      expirationHours: 24,
+    });
+
+    verificationUrl = generateVerificationUrl(
+      verificationToken,
+      VerificationTokenType.CONFIRM_EMAIL,
+      email
+    );
+  }
+
+  // Always use CONFIRM_EMAIL type, template will show both options if verificationUrl is provided
   emailEvent.emit("email", {
     type: EmailEventEnums.CONFIRM_EMAIL,
     to: email,
     code,
+    token: verificationToken,
+    verificationUrl,
     name,
     subject: EmailSubjects.CONFIRM_EMAIL,
   });
-  const user = await UserModel.create({
-    firstName,
-    lastName,
-    password: hashedPassword,
-    passwordHistory: [hashedPassword],
-    email,
-    age,
-    phone: encryptedPhone,
-    role,
-    confirmEmailOtp: hashedOtp,
+
+  const repo = new DatabaseRepo(UserModel);
+  
+  const user = await repo.create({
+    data:[{
+        firstName,
+        lastName,
+        password: hashedPassword,
+        passwordHistory: [hashedPassword],
+        email,
+        phone: encryptedPhone,
+        confirmEmailOtp: hashedOtp,
+        role,
+    }],
+    options: {
+      validateBeforeSave: true,  
+    },
   });
+
+  if (!user) {
+    throw new BadReqException("User not created");
+  }
+
   SucRes({
     res,
     statusCode: 201,
-    message: "User added successfully.",
-    data: user,
+    message: `User added successfully. Please check your email for ${verificationMethod === VerificationMethod.OTP ? 'OTP code' : 'verification link'}.`,
+    data: { 
+      user: user[0],
+      verificationMethod,
+    },
   });
 };
 
@@ -215,19 +263,44 @@ export const confirmEmail = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { email, otp }: IConfirmEmailDTO = req.body;
-  // to filter also with confirmEmail
+  const { email, otp, token }: IConfirmEmailDTO = req.body;
+
+  // Validate that either OTP or token is provided, but not both
+  if ((!otp && !token) || (otp && token)) {
+    throw new BadReqException("Please provide either OTP code or verification token");
+  }
+
   const user = await UserModel.findOne({
     email,
-    confirmEmailOtp: { $exists: true },
     confirmEmail: { $exists: false },
   });
+
   if (!user) {
     throw new AppException("User not found or Email already confirmed", 401);
   }
-  if (!(await compare({ plainText: otp, hash: user.confirmEmailOtp }))) {
-    throw new AppException("Invalid code", 401);
+
+  if (otp) {
+    // OTP verification
+    if (!user.confirmEmailOtp) {
+      throw new AppException("No OTP found for this email", 401);
+    }
+    if (!(await compare({ plainText: otp, hash: user.confirmEmailOtp }))) {
+      throw new AppException("Invalid OTP code", 401);
+    }
+  } else if (token) {
+    // Token verification
+    try {
+      await verifyVerificationToken({
+        token,
+        email,
+        type: VerificationTokenType.CONFIRM_EMAIL,
+        markAsUsed: true,
+      });
+    } catch (error) {
+      throw new AppException("Invalid or expired verification token", 401);
+    }
   }
+
   await UserModel.updateOne(
     { email },
     {
@@ -235,6 +308,7 @@ export const confirmEmail = async (
       $inc: { __v: 1 },
     }
   );
+
   SucRes({
     res,
     message: "Email confirmed successfully",
@@ -245,29 +319,65 @@ const forgetPassword = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { email } = req.body;
-  const code = customAlphabet("1234567890", 6)();
-  const hashedOtp = await hashing({ plainText: code });
-  const user = await UserModel.findOneAndUpdate(
-    { email, provider: providersEnum.SYSTEM, confirmEmail: { $exists: true } },
-    { $set: { forgetPasswordOtp: hashedOtp } }
-  );
+  const { email, verificationMethod = VerificationMethod.OTP }: IForgetPasswordDTO = req.body;
+  
+  const user = await UserModel.findOne({
+    email, 
+    provider: providersEnum.SYSTEM, 
+    confirmEmail: { $exists: true }
+  });
+  
   if (!user) {
     throw new AppException("User not found or Email not confirmed", 401);
   }
+  
   const name = `${user.firstName} ${user.lastName}`;
 
+  // Always generate OTP for database storage
+  const code = customAlphabet("1234567890", 6)();
+  const hashedOtp = await hashing({ plainText: code });
+  
+  await UserModel.updateOne(
+    { email },
+    { $set: { forgetPasswordOtp: hashedOtp } }
+  );
+
+  let verificationToken: string | undefined;
+  let verificationUrl: string | undefined;
+  
+  if (verificationMethod === VerificationMethod.TOKEN) {
+    // Token method - also create verification token
+    verificationToken = await createVerificationToken({
+      email,
+      type: VerificationTokenType.RESET_PASSWORD,
+      userId: user._id?.toString(),
+      expirationHours: 24,
+    });
+
+    verificationUrl = generateVerificationUrl(
+      verificationToken,
+      VerificationTokenType.RESET_PASSWORD,
+      email
+    );
+  }
+
+  // Always use FORGET_PASSWORD type, template will show both options if verificationUrl is provided
   emailEvent.emit("email", {
     type: EmailEventEnums.FORGET_PASSWORD,
     to: email,
     code,
+    token: verificationToken,
+    verificationUrl,
     name,
     subject: EmailSubjects.RESET_PASSWORD,
   });
+
   return SucRes({
     res,
-    message: "Check your email for reset password OTP",
-    data: { userId: user.id },
+    message: verificationMethod === VerificationMethod.TOKEN 
+      ? "Check your email for reset password options" 
+      : "Check your email for reset password OTP",
+    data: { userId: user.id, verificationMethod },
   });
 };
 
@@ -275,22 +385,60 @@ const resetPassword = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { userId, code, password, email }: IResetPasswordDTO = req.body;
-  const user = await UserModel.findOne({
-    _id: userId,
-    email,
-    forgetPasswordOtp: { $exists: true },
-    freezeAt: { $exists: false },
-    confirmEmail: { $exists: true },
-    provider: providersEnum.SYSTEM,
-  });
-  // const userById = await UserModel.findOne({ _id: userId });
+  const { userId, code, token, password, email }: IResetPasswordDTO = req.body;
+
+  // Validate that either OTP or token is provided, but not both
+  if ((!code && !token) || (code && token)) {
+    throw new BadReqException("Please provide either OTP code or verification token");
+  }
+
+  let user;
+
+  if (code) {
+    // OTP verification
+    user = await UserModel.findOne({
+      _id: userId,
+      email,
+      forgetPasswordOtp: { $exists: true },
+      freezeAt: { $exists: false },
+      confirmEmail: { $exists: true },
+      provider: providersEnum.SYSTEM,
+    });
+
+    if (!user) {
+      throw new AppException("User not found or Email not confirmed", 401);
+    }
+
+    if (!(await compare({ plainText: code, hash: user.forgetPasswordOtp }))) {
+      throw new AppException("Invalid OTP code", 401);
+    }
+  } else if (token) {
+    // Token verification
+    try {
+      const verificationToken = await verifyVerificationToken({
+        token,
+        email,
+        type: VerificationTokenType.RESET_PASSWORD,
+        markAsUsed: true,
+      });
+
+      user = await UserModel.findOne({
+        email,
+        freezeAt: { $exists: false },
+        confirmEmail: { $exists: true },
+        provider: providersEnum.SYSTEM,
+      });
+
+      if (!user) {
+        throw new AppException("User not found or Email not confirmed", 401);
+      }
+    } catch (error) {
+      throw new AppException("Invalid or expired verification token", 401);
+    }
+  }
 
   if (!user) {
-    throw new AppException("User not found or Email not confirmed", 401);
-  }
-  if (!(await compare({ plainText: code, hash: user.forgetPasswordOtp }))) {
-    throw new AppException("Invalid code", 401);
+    throw new AppException("User not found", 401);
   }
 
   // Enforce password history: reject if matches current or any previous
@@ -346,4 +494,61 @@ const resetPassword = async (
   });
 };
 
-export { signup, login, loginWithGmail, forgetPassword, resetPassword, logout };
+
+// New API endpoint for email verification via token (from URL)
+const verifyEmailViaToken = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { token, email } = req.query;
+
+  if (!token || !email) {
+    throw new BadReqException("Token and email are required");
+  }
+
+  if (typeof token !== 'string' || typeof email !== 'string') {
+    throw new BadReqException("Invalid token or email format");
+  }
+
+  try {
+    // Verify the token
+    await verifyVerificationToken({
+      token,
+      email,
+      type: VerificationTokenType.CONFIRM_EMAIL,
+      markAsUsed: true,
+    });
+
+    // Check if user exists and email is not already confirmed
+    const user = await UserModel.findOne({
+      email,
+      confirmEmail: { $exists: false },
+    });
+
+    if (!user) {
+      throw new AppException("User not found or Email already confirmed", 401);
+    }
+
+    // Update user's email confirmation
+    await UserModel.updateOne(
+      { email },
+      {
+        $set: { confirmEmail: Date.now(), confirmEmailOtp: undefined },
+        $inc: { __v: 1 },
+      }
+    );
+
+    const redirectUrl = process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:3000';
+    const successHtml = verificationSuccessPage({ email, redirectUrl });
+    res.status(200).send(successHtml);
+  } catch (error) {
+    const base = process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:3000';
+    const errorHtml = verificationErrorPage({
+      retryUrl: `${base}/signup`,
+      supportUrl: `${base}/contact`,
+    });
+    res.status(400).send(errorHtml);
+  }
+};
+
+export { signup, login, loginWithGmail, forgetPassword, resetPassword, logout, verifyEmailViaToken };

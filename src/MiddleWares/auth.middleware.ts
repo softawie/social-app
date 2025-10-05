@@ -35,11 +35,25 @@ export const authenticationMiddleware = async (
     throw new AppException("Invalid authorization header", 401);
   }
 
-  // First verify the token to get the user ID
-  const decoded = verifyToken({
-    token: tokenStr,
-    bearer
-  }) as DecodedToken;
+  // First try to verify the token - try admin secrets first, then user secrets
+  let decoded: DecodedToken;
+  try {
+    // Try admin token first
+    decoded = verifyToken({
+      token: tokenStr,
+      bearer: "admin"
+    }) as DecodedToken;
+  } catch (adminError) {
+    try {
+      // If admin verification fails, try user token
+      decoded = verifyToken({
+        token: tokenStr,
+        bearer: "user"
+      }) as DecodedToken;
+    } catch (userError) {
+      throw new AppException("Invalid token", 401);
+    }
+  }
 
   const tokenDoc = await TokenModel.findOne({ jti: decoded.jti });
   if(decoded.jti && tokenDoc){
