@@ -657,13 +657,47 @@
             </div>
 
             <!-- Backup History -->
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                 <h3>📋 Backup History</h3>
                 <div class="button-row">
                     <button onclick="loadBackupHistory()" class="btn-secondary">🔄 Refresh History</button>
                 </div>
                 <div id="backupHistory" style="max-height: 200px; overflow-y: auto; background: white; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px;">
                     <!-- Backup history will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Auto Backup -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>🤖 Auto Backup</h3>
+                <div class="button-row">
+                    <button onclick="loadAutoBackupStats()" class="btn-primary">📊 View Schedule</button>
+                    <button onclick="triggerManualAutoBackup()" class="btn-success">🚀 Run Now</button>
+                </div>
+                <div id="autoBackupStats" style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
+                    <p style="color: #666; margin: 0;">Click "View Schedule" to see auto-backup information</p>
+                </div>
+                <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 12px;">
+                    <strong>🕚 Schedule:</strong> Every day at 11:00 PM UTC<br>
+                    <strong>📦 Creates:</strong> MongoDB backup + Images backup automatically<br>
+                    <strong>🗄️ Database:</strong> Uses DB_NAME from environment (myDataBase)
+                </div>
+            </div>
+
+            <!-- Backup Cleanup -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>🧹 Backup Cleanup</h3>
+                <div class="button-row">
+                    <button onclick="loadCleanupStats()" class="btn-primary">📊 View Stats</button>
+                    <button onclick="triggerManualCleanup()" class="btn-danger">🗑️ Clean Old Backups</button>
+                </div>
+                <div id="cleanupStats" style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
+                    <p style="color: #666; margin: 0;">Click "View Stats" to see cleanup information</p>
+                </div>
+                <div style="background: #e9ecef; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 12px;">
+                    <strong>📅 Automatic Cleanup:</strong> Runs every Sunday at 2:00 AM UTC<br>
+                    <strong>🗂️ Retention Policy:</strong> Deletes backups older than 3 days<br>
+                    <strong>📁 Affected Files:</strong> MongoDB backups (.gz) and Images backups (.zip)
                 </div>
             </div>
 
@@ -1358,6 +1392,8 @@ User Agent: ${log.userAgent}
                 updateTokenStatus();
                 loadMongoBackups();
                 loadBackupHistory();
+                loadAutoBackupStats();
+                loadCleanupStats();
             }
         }
 
@@ -1590,6 +1626,178 @@ User Agent: ${log.userAgent}
                 }
             } catch (error) {
                 document.getElementById('backupHistory').innerHTML = `Error loading backup history: ${error.message}`;
+            }
+        }
+
+        async function loadCleanupStats() {
+            if (!ADMIN_TOKEN) {
+                document.getElementById('cleanupStats').innerHTML = 'Please save an admin token to view cleanup stats';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/cleanup/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const statsDiv = document.getElementById('cleanupStats');
+                if (result.success) {
+                    const stats = result.data;
+                    statsDiv.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div style="text-align: center; padding: 10px; background: #e3f2fd; border-radius: 4px;">
+                                <div style="font-size: 24px; font-weight: bold; color: #1976d2;">${stats.totalFiles}</div>
+                                <div style="font-size: 12px; color: #666;">Total Backup Files</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px; background: #fff3e0; border-radius: 4px;">
+                                <div style="font-size: 24px; font-weight: bold; color: #f57c00;">${stats.oldFiles}</div>
+                                <div style="font-size: 12px; color: #666;">Files > 3 Days Old</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px; background: #e8f5e8; border-radius: 4px;">
+                                <div style="font-size: 16px; font-weight: bold; color: #388e3c;">${stats.totalSize}</div>
+                                <div style="font-size: 12px; color: #666;">Total Size</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px; background: #ffebee; border-radius: 4px;">
+                                <div style="font-size: 16px; font-weight: bold; color: #d32f2f;">${stats.oldFilesSize}</div>
+                                <div style="font-size: 12px; color: #666;">Old Files Size</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; font-size: 12px;">
+                            <strong>Next Scheduled Cleanup:</strong> ${stats.nextCleanup}
+                        </div>
+                    `;
+                } else {
+                    statsDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cleanupStats').innerHTML = `<div style="color: red;">Error loading cleanup stats: ${error.message}</div>`;
+            }
+        }
+
+        async function triggerManualCleanup() {
+            if (!ADMIN_TOKEN) {
+                showBackupStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete all backup files older than 3 days? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/cleanup/trigger`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showBackupStatus('Manual cleanup triggered successfully. Check backup history for details.');
+                    // Refresh stats and history after cleanup
+                    setTimeout(() => {
+                        loadCleanupStats();
+                        loadBackupHistory();
+                        loadMongoBackups();
+                    }, 2000);
+                } else {
+                    showBackupStatus(result.message, 'error');
+                }
+            } catch (error) {
+                showBackupStatus(`Error triggering cleanup: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadAutoBackupStats() {
+            if (!ADMIN_TOKEN) {
+                document.getElementById('autoBackupStats').innerHTML = 'Please save an admin token to view auto-backup stats';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/auto/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const statsDiv = document.getElementById('autoBackupStats');
+                if (result.success) {
+                    const stats = result.data;
+                    statsDiv.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div style="text-align: center; padding: 15px; background: #e8f5e8; border-radius: 4px;">
+                                <div style="font-size: 16px; font-weight: bold; color: #388e3c;">✅ ${stats.enabled ? 'ENABLED' : 'DISABLED'}</div>
+                                <div style="font-size: 12px; color: #666;">Auto Backup Status</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: #e3f2fd; border-radius: 4px;">
+                                <div style="font-size: 14px; font-weight: bold; color: #1976d2;">${stats.schedule}</div>
+                                <div style="font-size: 12px; color: #666;">Backup Schedule</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: #fff3e0; border-radius: 4px;">
+                                <div style="font-size: 14px; font-weight: bold; color: #f57c00;">${stats.nextBackup}</div>
+                                <div style="font-size: 12px; color: #666;">Next Backup</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: #f3e5f5; border-radius: 4px;">
+                                <div style="font-size: 14px; font-weight: bold; color: #7b1fa2;">${stats.databaseName}</div>
+                                <div style="font-size: 12px; color: #666;">Database Name</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; padding: 12px; background: #f5f5f5; border-radius: 4px; font-size: 13px;">
+                            <strong>📋 What happens at ${stats.schedule}:</strong><br>
+                            • Creates MongoDB backup (.gz file)<br>
+                            • Creates Images backup (.zip file)<br>
+                            • Logs all actions to backup history<br>
+                            • Reports success/failure status
+                        </div>
+                    `;
+                } else {
+                    statsDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('autoBackupStats').innerHTML = `<div style="color: red;">Error loading auto-backup stats: ${error.message}</div>`;
+            }
+        }
+
+        async function triggerManualAutoBackup() {
+            if (!ADMIN_TOKEN) {
+                showBackupStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            if (!confirm('This will create both MongoDB and Images backups right now. Continue?')) {
+                return;
+            }
+
+            showBackupStatus('Starting automatic backup process... This may take a moment.', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/auto/trigger`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showBackupStatus('🎉 Automatic backup completed successfully! Both MongoDB and Images backups were created.');
+                    // Refresh all backup data after auto-backup
+                    setTimeout(() => {
+                        loadMongoBackups();
+                        loadBackupHistory();
+                        loadCleanupStats();
+                    }, 2000);
+                } else {
+                    showBackupStatus(result.message, 'error');
+                }
+            } catch (error) {
+                showBackupStatus(`Error triggering auto-backup: ${error.message}`, 'error');
             }
         }
     </script>

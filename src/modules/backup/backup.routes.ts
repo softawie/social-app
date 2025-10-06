@@ -19,4 +19,12 @@ backupRouter.delete('/images/delete/:fileName', authenticationMiddleware, Backup
 // Backup history (protected)
 backupRouter.get('/history', authenticationMiddleware, BackupController.getBackupHistory);
 
+// Backup cleanup (protected)
+backupRouter.get('/cleanup/stats', authenticationMiddleware, BackupController.getCleanupStats);
+backupRouter.post('/cleanup/trigger', authenticationMiddleware, BackupController.triggerManualCleanup);
+
+// Auto-backup (protected)
+backupRouter.get('/auto/stats', authenticationMiddleware, BackupController.getAutoBackupStats);
+backupRouter.post('/auto/trigger', authenticationMiddleware, BackupController.triggerManualAutoBackup);
+
 export default backupRouter;

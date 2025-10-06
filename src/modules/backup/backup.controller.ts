@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { BackupService } from './backup.service';
 import { AppException } from '@src/exceptions/app.exception';
 import { handleControllerError } from '../../utils/error-handler.utils';
+import { BackupCleanupJob } from '@src/jobs/backup.cleanup.job';
+import { AutoBackupJob } from '@src/jobs/auto.backup.job';
 import { 
   createMongoBackupValidation,
   restoreMongoBackupValidation,
@@ -159,6 +161,73 @@ export class BackupController {
         success: true,
         message: 'Backup history retrieved successfully',
         data: history,
+      });
+    } catch (error: unknown) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  /**
+   * Get backup cleanup statistics
+   */
+  static async getCleanupStats(req: Request, res: Response) {
+    try {
+      const stats = BackupCleanupJob.getCleanupStats();
+      
+      res.status(200).json({
+        success: true,
+        message: 'Cleanup statistics retrieved successfully',
+        data: stats,
+      });
+    } catch (error: unknown) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  /**
+   * Trigger manual backup cleanup
+   */
+  static async triggerManualCleanup(req: Request, res: Response) {
+    try {
+      BackupCleanupJob.triggerManualCleanup();
+      
+      res.status(200).json({
+        success: true,
+        message: 'Manual backup cleanup triggered successfully',
+      });
+    } catch (error: unknown) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  /**
+   * Get auto-backup statistics
+   */
+  static async getAutoBackupStats(req: Request, res: Response) {
+    try {
+      const stats = AutoBackupJob.getAutoBackupStats();
+      
+      res.status(200).json({
+        success: true,
+        message: 'Auto-backup statistics retrieved successfully',
+        data: stats,
+      });
+    } catch (error: unknown) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  /**
+   * Trigger manual auto-backup
+   */
+  static async triggerManualAutoBackup(req: Request, res: Response) {
+    try {
+      const result = await AutoBackupJob.triggerManualAutoBackup();
+      
+      res.status(result.success ? 200 : 500).json({
+        success: result.success,
+        message: result.message,
+        data: result.data,
       });
     } catch (error: unknown) {
       return handleControllerError(error, res);

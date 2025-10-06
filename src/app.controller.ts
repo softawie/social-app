@@ -11,6 +11,8 @@ import rateLimit from "express-rate-limit";
 import { getRouteLogger } from "@utils/logger/logger";
 import { structuredLoggerMiddleware } from "@utils/logger/structured-logger";
 import { startSuccessLogsCleanupJob } from "@src/jobs/logs.cleanup.job";
+import { BackupCleanupJob } from "@src/jobs/backup.cleanup.job";
+import { AutoBackupJob } from "@src/jobs/auto.backup.job";
 
 const limitRequest = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -27,6 +29,10 @@ const bootstrap = async (app: Express) => {
   await CheckDB();
   // Start daily cleanup job (deletes success logs at 21:00 local time)
   startSuccessLogsCleanupJob();
+  // Start weekly backup cleanup job (deletes old backups every Sunday at 2:00 AM)
+  BackupCleanupJob.startWeeklyBackupCleanup();
+  // Start daily auto-backup job (creates backups every day at 11:00 PM)
+  AutoBackupJob.startDailyAutoBackup();
   app.use("/uploads", express.static("./src/uploads"));
   
   // Use getRouteLogger for auth routes (this will mount the authRouter with logging)
