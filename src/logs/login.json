@@ -3848,15 +3848,5 @@
     "responseTime": 11,
     "ip": "::1",
     "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
-  },
-  {
-    "id": 386,
-    "timestamp": "2025-10-06T17:18:24.347Z",
-    "method": "POST",
-    "url": "/auth/login",
-    "status": 200,
-    "responseTime": 214,
-    "ip": "::1",
-    "userAgent": "PostmanRuntime/7.48.0"
   }
 ]

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Management Dashboard</title>
+    <title>API Logs Viewer</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -24,37 +24,6 @@
             text-align: center;
             margin-bottom: 30px;
         }
-        .nav-tabs {
-            display: flex;
-            border-bottom: 2px solid #ddd;
-            margin-bottom: 20px;
-        }
-        .nav-tab {
-            padding: 12px 24px;
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-bottom: none;
-            cursor: pointer;
-            margin-right: 2px;
-            border-radius: 8px 8px 0 0;
-            transition: all 0.3s ease;
-        }
-        .nav-tab:hover {
-            background: #e9ecef;
-        }
-        .nav-tab.active {
-            background: white;
-            border-bottom: 2px solid white;
-            margin-bottom: -2px;
-            font-weight: bold;
-            color: #007bff;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
         .filters {
             display: flex;
             gap: 15px;
@@ -62,34 +31,6 @@
             flex-wrap: wrap;
             align-items: center;
         }
-        .button-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .button-row button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .button-row button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-success { background-color: #28a745; color: white; }
-        .btn-danger { background-color: #dc3545; color: white; }
-        .btn-info { background-color: #17a2b8; color: white; }
-        .btn-secondary { background-color: #6c757d; color: white; }
         .token-group {
             display: flex;
             align-items: center;
@@ -249,13 +190,6 @@
         .error {
             background-color: #f8d7da;
             color: #721c24;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
             padding: 15px;
             border-radius: 4px;
             margin-bottom: 20px;
@@ -494,19 +428,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔧 System Management Dashboard</h1>
+        <h1>🔍 API Logs Viewer</h1>
         
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <div class="nav-tab active" onclick="switchTab('logs')">📊 Logs Viewer</div>
-            <div class="nav-tab" onclick="switchTab('backup')">💾 Backup Manager</div>
+        <div class="stats" id="stats">
+            <!-- Stats will be loaded here -->
         </div>
-        
-        <!-- Logs Tab Content -->
-        <div id="logs-tab" class="tab-content active">
-            <div class="stats" id="stats">
-                <!-- Stats will be loaded here -->
-            </div>
 
         <div class="filters">
             <div class="filter-group">
@@ -540,24 +466,16 @@
                     <option value="100">100</option>
                 </select>
             </div>
-            <!-- Token Management Row -->
-            <div class="button-row">
-                <input id="adminTokenInput" class="token-input" type="password" placeholder="Admin JWT Token" style="min-width: 300px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
-                <button onclick="saveAdminToken()" class="btn-success">💾 Save Token</button>
-                <button onclick="clearAdminToken()" class="btn-secondary">🗑️ Clear Token</button>
-                <span id="tokenStatus" class="token-status" style="margin-left: 10px; font-weight: 500;">Token: not set</span>
-            </div>
-            
-            <!-- Action Buttons Row -->
-            <div class="button-row">
-                <button onclick="loadLogs()" class="btn-primary">🔄 Refresh</button>
-                <button onclick="clearLogs()" class="btn-danger">🗑️ Clear Logs</button>
-                <button onclick="exportLogs()" class="btn-success">📥 Export</button>
-            </div>
-            
-            <!-- Test Enhanced Logging Row -->
-            <div class="button-row">
-                <button onclick="testEnhancedLogging()" class="btn-info">🧪 Test Enhanced Logging</button>
+            <button onclick="loadLogs()">🔄 Refresh</button>
+            <button onclick="clearLogs()" style="background-color: #dc3545;">🗑️ Clear Logs</button>
+            <button onclick="exportLogs()" style="background-color: #28a745;">📥 Export</button>
+            <button onclick="testEnhancedLogging()" style="background-color: #17a2b8;">🧪 Test Enhanced Logging</button>
+
+            <div class="token-group">
+                <input id="adminTokenInput" class="token-input" type="password" placeholder="Paste admin access token (JWT)" />
+                <button onclick="saveAdminToken()">Save Token</button>
+                <button onclick="clearAdminToken()" style="background-color:#6c757d;">Clear</button>
+                <span id="tokenStatus" class="token-status">Token: not set</span>
             </div>
         </div>
 
@@ -609,100 +527,6 @@
             <div id="modalContent">
                 <!-- Modal content will be loaded here -->
             </div>
-        </div>
-        </div>
-
-        <!-- Backup Tab Content -->
-        <div id="backup-tab" class="tab-content">
-            <div style="display: flex; gap: 20px; margin-bottom: 30px;">
-                <!-- MongoDB Backup Section -->
-                <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h3>🗄️ MongoDB Backup</h3>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label for="dbName">Database Name:</label>
-                        <input type="text" id="dbName" placeholder="Enter database name" value="myDataBase" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    
-                    <div class="button-row">
-                        <button onclick="createMongoBackup()" class="btn-success">💾 Create Backup</button>
-                        <button onclick="loadMongoBackups()" class="btn-primary">🔄 Refresh List</button>
-                    </div>
-                    
-                    <div id="mongoBackupsList" style="max-height: 300px; overflow-y: auto;">
-                        <!-- MongoDB backups will be loaded here -->
-                    </div>
-                </div>
-
-                <!-- Images Backup Section -->
-                <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h3>🖼️ Images Backup</h3>
-                    
-                    <div class="button-row">
-                        <button onclick="createImagesBackup()" class="btn-success">📦 Create Images Backup</button>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label for="restoreFile">Restore from ZIP:</label>
-                        <input type="file" id="restoreFile" accept=".zip" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
-                        <div class="button-row" style="margin-top: 8px;">
-                            <button onclick="restoreImagesBackup()" class="btn-info">📥 Restore Images</button>
-                        </div>
-                    </div>
-                    
-                    <div id="imagesBackupsList" style="max-height: 300px; overflow-y: auto;">
-                        <!-- Images backups will be loaded here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Backup History -->
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3>📋 Backup History</h3>
-                <div class="button-row">
-                    <button onclick="loadBackupHistory()" class="btn-secondary">🔄 Refresh History</button>
-                </div>
-                <div id="backupHistory" style="max-height: 200px; overflow-y: auto; background: white; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px;">
-                    <!-- Backup history will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Auto Backup -->
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3>🤖 Auto Backup</h3>
-                <div class="button-row">
-                    <button onclick="loadAutoBackupStats()" class="btn-primary">📊 View Schedule</button>
-                    <button onclick="triggerManualAutoBackup()" class="btn-success">🚀 Run Now</button>
-                </div>
-                <div id="autoBackupStats" style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
-                    <p style="color: #666; margin: 0;">Click "View Schedule" to see auto-backup information</p>
-                </div>
-                <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 12px;">
-                    <strong>🕚 Schedule:</strong> Every day at 11:00 PM UTC<br>
-                    <strong>📦 Creates:</strong> MongoDB backup + Images backup automatically<br>
-                    <strong>🗄️ Database:</strong> Uses DB_NAME from environment (myDataBase)
-                </div>
-            </div>
-
-            <!-- Backup Cleanup -->
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3>🧹 Backup Cleanup</h3>
-                <div class="button-row">
-                    <button onclick="loadCleanupStats()" class="btn-primary">📊 View Stats</button>
-                    <button onclick="triggerManualCleanup()" class="btn-danger">🗑️ Clean Old Backups</button>
-                </div>
-                <div id="cleanupStats" style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
-                    <p style="color: #666; margin: 0;">Click "View Stats" to see cleanup information</p>
-                </div>
-                <div style="background: #e9ecef; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 12px;">
-                    <strong>📅 Automatic Cleanup:</strong> Runs every Sunday at 2:00 AM UTC<br>
-                    <strong>🗂️ Retention Policy:</strong> Deletes backups older than 3 days<br>
-                    <strong>📁 Affected Files:</strong> MongoDB backups (.gz) and Images backups (.zip)
-                </div>
-            </div>
-
-            <!-- Status Messages -->
-            <div id="backupStatus" style="margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -1366,440 +1190,6 @@ User Agent: ${log.userAgent}
             loadLogs();
             setupFilterListeners(); // Setup automatic filtering
         });
-
-        // Tab switching functionality
-        function switchTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab content
-            document.getElementById(tabName + '-tab').classList.add('active');
-            
-            // Add active class to selected tab
-            event.target.classList.add('active');
-            
-            // Load backup data when switching to backup tab
-            if (tabName === 'backup') {
-                // Refresh token from localStorage
-                ADMIN_TOKEN = localStorage.getItem('admin_token') || '';
-                updateTokenStatus();
-                loadMongoBackups();
-                loadBackupHistory();
-                loadAutoBackupStats();
-                loadCleanupStats();
-            }
-        }
-
-        // Backup functionality
-        function showBackupStatus(message, type = 'info') {
-            const statusDiv = document.getElementById('backupStatus');
-            const className = type === 'error' ? 'error' : 'success';
-            statusDiv.innerHTML = `<div class="${className}" style="padding: 10px; border-radius: 4px; margin: 10px 0;">${message}</div>`;
-            setTimeout(() => statusDiv.innerHTML = '', 5000);
-        }
-
-        async function createMongoBackup() {
-            const dbName = document.getElementById('dbName').value.trim();
-            if (!dbName) {
-                showBackupStatus('Please enter a database name', 'error');
-                return;
-            }
-
-            if (!ADMIN_TOKEN) {
-                showBackupStatus('Please save an admin token first', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/mongo/create`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    },
-                    body: JSON.stringify({ dbName })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showBackupStatus(`MongoDB backup created successfully: ${result.data.backupFile}`);
-                    loadMongoBackups();
-                    loadBackupHistory();
-                } else {
-                    showBackupStatus(result.message, 'error');
-                }
-            } catch (error) {
-                showBackupStatus(`Error creating backup: ${error.message}`, 'error');
-            }
-        }
-
-        async function loadMongoBackups() {
-            if (!ADMIN_TOKEN) {
-                document.getElementById('mongoBackupsList').innerHTML = '<div style="color: orange; padding: 10px;">Please save an admin token to view backups</div>';
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/mongo/list`, {
-                    headers: {
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    }
-                });
-                const result = await response.json();
-                
-                const listDiv = document.getElementById('mongoBackupsList');
-                if (result.success && result.data.length > 0) {
-                    listDiv.innerHTML = result.data.map(backup => `
-                        <div style="background: white; padding: 10px; margin: 5px 0; border-radius: 4px; display: flex; justify-content: between; align-items: center;">
-                            <div>
-                                <strong>${backup.fileName}</strong><br>
-                                <small>Size: ${backup.sizeMB} MB | Created: ${backup.createdAt}</small>
-                            </div>
-                            <div style="margin-left: auto; display: flex; gap: 5px;">
-                                <button onclick="restoreMongoBackup('${backup.fileName}')" class="btn-info" style="padding: 5px 10px; font-size: 12px;">📥 Restore</button>
-                                <button onclick="deleteMongoBackup('${backup.fileName}')" class="btn-danger" style="padding: 5px 10px; font-size: 12px;">🗑️ Delete</button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    listDiv.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No MongoDB backups found</div>';
-                }
-            } catch (error) {
-                document.getElementById('mongoBackupsList').innerHTML = `<div style="color: red; padding: 10px;">Error loading backups: ${error.message}</div>`;
-            }
-        }
-
-        async function restoreMongoBackup(fileName) {
-            if (!confirm(`Are you sure you want to restore from ${fileName}? This will overwrite the current database.`)) {
-                return;
-            }
-
-            const dbName = document.getElementById('dbName').value.trim();
-            if (!dbName) {
-                showBackupStatus('Please enter a database name for restore', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/mongo/restore`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    },
-                    body: JSON.stringify({ 
-                        archivePath: `./src/backups/${fileName}`,
-                        dbName: dbName,
-                        gzip: true
-                    })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showBackupStatus('MongoDB backup restored successfully');
-                    loadBackupHistory();
-                } else {
-                    showBackupStatus(result.message, 'error');
-                }
-            } catch (error) {
-                showBackupStatus(`Error restoring backup: ${error.message}`, 'error');
-            }
-        }
-
-        async function deleteMongoBackup(fileName) {
-            if (!confirm(`Are you sure you want to delete ${fileName}?`)) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/mongo/delete`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    },
-                    body: JSON.stringify({ fileName })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showBackupStatus('MongoDB backup deleted successfully');
-                    loadMongoBackups();
-                } else {
-                    showBackupStatus(result.message, 'error');
-                }
-            } catch (error) {
-                showBackupStatus(`Error deleting backup: ${error.message}`, 'error');
-            }
-        }
-
-        async function createImagesBackup() {
-            if (!ADMIN_TOKEN) {
-                showBackupStatus('Please save an admin token first', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/images/create`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    }
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showBackupStatus(`Images backup created successfully. Size: ${(result.data.size / 1024 / 1024).toFixed(2)} MB`);
-                    loadBackupHistory();
-                } else {
-                    showBackupStatus(result.message, 'error');
-                }
-            } catch (error) {
-                showBackupStatus(`Error creating images backup: ${error.message}`, 'error');
-            }
-        }
-
-        async function restoreImagesBackup() {
-            const fileInput = document.getElementById('restoreFile');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showBackupStatus('Please select a ZIP file to restore', 'error');
-                return;
-            }
-
-            if (!confirm('Are you sure you want to restore images? This will overwrite existing images.')) {
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('backupZip', file);
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/images/restore`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    },
-                    body: formData
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showBackupStatus('Images backup restored successfully');
-                    fileInput.value = '';
-                    loadBackupHistory();
-                } else {
-                    showBackupStatus(result.message, 'error');
-                }
-            } catch (error) {
-                showBackupStatus(`Error restoring images backup: ${error.message}`, 'error');
-            }
-        }
-
-        async function loadBackupHistory() {
-            if (!ADMIN_TOKEN) {
-                document.getElementById('backupHistory').innerHTML = 'Please save an admin token to view backup history';
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/history`, {
-                    headers: {
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    }
-                });
-                const result = await response.json();
-                
-                const historyDiv = document.getElementById('backupHistory');
-                if (result.success && result.data.length > 0) {
-                    historyDiv.innerHTML = result.data.join('<br>');
-                } else {
-                    historyDiv.innerHTML = 'No backup history found';
-                }
-            } catch (error) {
-                document.getElementById('backupHistory').innerHTML = `Error loading backup history: ${error.message}`;
-            }
-        }
-
-        async function loadCleanupStats() {
-            if (!ADMIN_TOKEN) {
-                document.getElementById('cleanupStats').innerHTML = 'Please save an admin token to view cleanup stats';
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/cleanup/stats`, {
-                    headers: {
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    }
-                });
-                const result = await response.json();
-                
-                const statsDiv = document.getElementById('cleanupStats');
-                if (result.success) {
-                    const stats = result.data;
-                    statsDiv.innerHTML = `
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                            <div style="text-align: center; padding: 10px; background: #e3f2fd; border-radius: 4px;">
-                                <div style="font-size: 24px; font-weight: bold; color: #1976d2;">${stats.totalFiles}</div>
-                                <div style="font-size: 12px; color: #666;">Total Backup Files</div>
-                            </div>
-                            <div style="text-align: center; padding: 10px; background: #fff3e0; border-radius: 4px;">
-                                <div style="font-size: 24px; font-weight: bold; color: #f57c00;">${stats.oldFiles}</div>
-                                <div style="font-size: 12px; color: #666;">Files > 3 Days Old</div>
-                            </div>
-                            <div style="text-align: center; padding: 10px; background: #e8f5e8; border-radius: 4px;">
-                                <div style="font-size: 16px; font-weight: bold; color: #388e3c;">${stats.totalSize}</div>
-                                <div style="font-size: 12px; color: #666;">Total Size</div>
-                            </div>
-                            <div style="text-align: center; padding: 10px; background: #ffebee; border-radius: 4px;">
-                                <div style="font-size: 16px; font-weight: bold; color: #d32f2f;">${stats.oldFilesSize}</div>
-                                <div style="font-size: 12px; color: #666;">Old Files Size</div>
-                            </div>
-                        </div>
-                        <div style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; font-size: 12px;">
-                            <strong>Next Scheduled Cleanup:</strong> ${stats.nextCleanup}
-                        </div>
-                    `;
-                } else {
-                    statsDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
-                }
-            } catch (error) {
-                document.getElementById('cleanupStats').innerHTML = `<div style="color: red;">Error loading cleanup stats: ${error.message}</div>`;
-            }
-        }
-
-        async function triggerManualCleanup() {
-            if (!ADMIN_TOKEN) {
-                showBackupStatus('Please save an admin token first', 'error');
-                return;
-            }
-
-            if (!confirm('Are you sure you want to delete all backup files older than 3 days? This action cannot be undone.')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/cleanup/trigger`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    }
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showBackupStatus('Manual cleanup triggered successfully. Check backup history for details.');
-                    // Refresh stats and history after cleanup
-                    setTimeout(() => {
-                        loadCleanupStats();
-                        loadBackupHistory();
-                        loadMongoBackups();
-                    }, 2000);
-                } else {
-                    showBackupStatus(result.message, 'error');
-                }
-            } catch (error) {
-                showBackupStatus(`Error triggering cleanup: ${error.message}`, 'error');
-            }
-        }
-
-        async function loadAutoBackupStats() {
-            if (!ADMIN_TOKEN) {
-                document.getElementById('autoBackupStats').innerHTML = 'Please save an admin token to view auto-backup stats';
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/auto/stats`, {
-                    headers: {
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    }
-                });
-                const result = await response.json();
-                
-                const statsDiv = document.getElementById('autoBackupStats');
-                if (result.success) {
-                    const stats = result.data;
-                    statsDiv.innerHTML = `
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                            <div style="text-align: center; padding: 15px; background: #e8f5e8; border-radius: 4px;">
-                                <div style="font-size: 16px; font-weight: bold; color: #388e3c;">✅ ${stats.enabled ? 'ENABLED' : 'DISABLED'}</div>
-                                <div style="font-size: 12px; color: #666;">Auto Backup Status</div>
-                            </div>
-                            <div style="text-align: center; padding: 15px; background: #e3f2fd; border-radius: 4px;">
-                                <div style="font-size: 14px; font-weight: bold; color: #1976d2;">${stats.schedule}</div>
-                                <div style="font-size: 12px; color: #666;">Backup Schedule</div>
-                            </div>
-                            <div style="text-align: center; padding: 15px; background: #fff3e0; border-radius: 4px;">
-                                <div style="font-size: 14px; font-weight: bold; color: #f57c00;">${stats.nextBackup}</div>
-                                <div style="font-size: 12px; color: #666;">Next Backup</div>
-                            </div>
-                            <div style="text-align: center; padding: 15px; background: #f3e5f5; border-radius: 4px;">
-                                <div style="font-size: 14px; font-weight: bold; color: #7b1fa2;">${stats.databaseName}</div>
-                                <div style="font-size: 12px; color: #666;">Database Name</div>
-                            </div>
-                        </div>
-                        <div style="margin-top: 15px; padding: 12px; background: #f5f5f5; border-radius: 4px; font-size: 13px;">
-                            <strong>📋 What happens at ${stats.schedule}:</strong><br>
-                            • Creates MongoDB backup (.gz file)<br>
-                            • Creates Images backup (.zip file)<br>
-                            • Logs all actions to backup history<br>
-                            • Reports success/failure status
-                        </div>
-                    `;
-                } else {
-                    statsDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
-                }
-            } catch (error) {
-                document.getElementById('autoBackupStats').innerHTML = `<div style="color: red;">Error loading auto-backup stats: ${error.message}</div>`;
-            }
-        }
-
-        async function triggerManualAutoBackup() {
-            if (!ADMIN_TOKEN) {
-                showBackupStatus('Please save an admin token first', 'error');
-                return;
-            }
-
-            if (!confirm('This will create both MongoDB and Images backups right now. Continue?')) {
-                return;
-            }
-
-            showBackupStatus('Starting automatic backup process... This may take a moment.', 'info');
-
-            try {
-                const response = await fetch(`${API_BASE}/backup/auto/trigger`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${ADMIN_TOKEN}`
-                    }
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showBackupStatus('🎉 Automatic backup completed successfully! Both MongoDB and Images backups were created.');
-                    // Refresh all backup data after auto-backup
-                    setTimeout(() => {
-                        loadMongoBackups();
-                        loadBackupHistory();
-                        loadCleanupStats();
-                    }, 2000);
-                } else {
-                    showBackupStatus(result.message, 'error');
-                }
-            } catch (error) {
-                showBackupStatus(`Error triggering auto-backup: ${error.message}`, 'error');
-            }
-        }
     </script>
 </body>
 </html>
