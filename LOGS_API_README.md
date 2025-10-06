@@ -4,7 +4,8 @@
 
 This API provides comprehensive logging functionality for your Express.js application. It automatically captures all HTTP requests with detailed information and provides endpoints to retrieve, filter, and analyze logs.
 
-## Features
+## Features 
+
 
 - ✅ **Automatic Request Logging**: Captures all HTTP requests automatically
 - ✅ **Structured JSON Format**: Logs stored in structured JSON format
