@@ -12,6 +12,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/archiver": "^6.0.3",
+    "@types/unzipper": "^0.10.11",
+    "archiver": "^7.0.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
@@ -26,6 +29,7 @@
     "multer": "^2.0.2",
     "nanoid": "^5.1.5",
     "nodemailer": "^7.0.5",
+    "unzipper": "^0.12.3",
     "zod": "^4.1.11"
   },
   "devDependencies": {

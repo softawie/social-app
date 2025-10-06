@@ -3,6 +3,7 @@ import { CheckDB } from "@db/connectionDB";
 import userRouter from "@modules/users/user.controller";
 import authRouter from "@modules/auth/auth.controller";
 import logsRouter from "@modules/logs/logs.controller";
+import backupRouter from "@modules/backup/backup.routes";
 import { globalErrorHandler, NotFoundException } from "@utils/globalError.handler";
 import * as cors from "cors";
 import helmet from "helmet";
@@ -35,6 +36,7 @@ const bootstrap = async (app: Express) => {
   getRouteLogger(app,"/auth",authRouter,"login.log");
 
   app.use("/api", logsRouter);
+  app.use("/api/backup", backupRouter);
   
   // Public app config for static tools (e.g., logs viewer)
   app.get("/app-config", (req, res) => {
