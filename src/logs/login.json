@@ -3851,6 +3851,11 @@
   },
   {
     "id": 386,
+    "timestamp": "2025-10-06T17:18:24.347Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 214,
     "timestamp": "2025-09-30T18:01:37.088Z",
     "method": "GET",
     "url": "/api/logs/stats",
