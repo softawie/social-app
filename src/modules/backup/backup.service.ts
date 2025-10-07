@@ -298,6 +298,61 @@ export class BackupService {
   }
 
   /**
+   * Get all images backups
+   */
+  static async getAllImagesBackups(): Promise<Array<{ fileName: string; sizeMB: string; createdAt: string }>> {
+    const backupDir = this.DEFAULT_BACKUP_DIR;
+
+    if (!fs.existsSync(backupDir)) {
+      return [];
+    }
+
+    const files = fs
+      .readdirSync(backupDir)
+      .filter((file) => file.endsWith('.zip') && file.includes('images-backup'))
+      .sort((a, b) => {
+        // Sort by creation time (newest first)
+        const statsA = fs.statSync(path.join(backupDir, a));
+        const statsB = fs.statSync(path.join(backupDir, b));
+        return statsB.birthtime.getTime() - statsA.birthtime.getTime();
+      });
+
+    return files.map((fileName) => {
+      const fullPath = path.join(backupDir, fileName);
+      const stats = fs.statSync(fullPath);
+
+      return {
+        fileName,
+        sizeMB: (stats.size / (1024 * 1024)).toFixed(2),
+        createdAt: stats.birthtime.toISOString().replace('T', ' ').split('.')[0],
+      };
+    });
+  }
+
+  /**
+   * Get images backup file path
+   */
+  static async getImagesBackupPath(fileName: string): Promise<string> {
+    if (!fileName || !fileName.endsWith('.zip')) {
+      throw new AppException('Invalid filename provided', 400);
+    }
+
+    const backupDir = this.DEFAULT_BACKUP_DIR;
+    const filePath = path.join(backupDir, fileName);
+
+    // Security check
+    if (!filePath.startsWith(backupDir)) {
+      throw new AppException('Unauthorized file path', 403);
+    }
+
+    if (!fs.existsSync(filePath)) {
+      throw new AppException('File not found', 404);
+    }
+
+    return filePath;
+  }
+
+  /**
    * Delete images backup
    */
   static async deleteImagesBackup(fileName: string): Promise<void> {
