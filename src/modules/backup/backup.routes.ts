@@ -13,6 +13,8 @@ backupRouter.delete('/mongo/delete', authenticationMiddleware, BackupController.
 
 // Images backup routes (protected)
 backupRouter.post('/images/create', authenticationMiddleware, BackupController.createImagesBackup);
+backupRouter.get('/images/list', authenticationMiddleware, BackupController.getAllImagesBackups);
+backupRouter.get('/images/download/:fileName', authenticationMiddleware, BackupController.downloadImagesBackup);
 backupRouter.post('/images/restore', authenticationMiddleware, backupUpload.single('backupZip'), BackupController.restoreImagesBackup);
 backupRouter.delete('/images/delete/:fileName', authenticationMiddleware, BackupController.deleteImagesBackup);
 

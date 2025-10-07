@@ -129,6 +129,52 @@ export class BackupController {
   }
 
   /**
+   * Get all images backups
+   */
+  static async getAllImagesBackups(req: Request, res: Response) {
+    try {
+      const backups = await BackupService.getAllImagesBackups();
+      
+      res.status(200).json({
+        success: true,
+        message: 'Images backups retrieved successfully',
+        data: backups,
+      });
+    } catch (error: unknown) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  /**
+   * Download images backup file
+   */
+  static async downloadImagesBackup(req: Request, res: Response) {
+    try {
+      const { fileName } = req.params;
+      
+      if (!fileName) {
+        throw new AppException('File name is required', 400);
+      }
+
+      const filePath = await BackupService.getImagesBackupPath(fileName);
+      
+      res.download(filePath, fileName, (err) => {
+        if (err) {
+          console.error('Error downloading file:', err);
+          if (!res.headersSent) {
+            res.status(500).json({
+              success: false,
+              message: 'Failed to download backup file',
+            });
+          }
+        }
+      });
+    } catch (error: unknown) {
+      return handleControllerError(error, res);
+    }
+  }
+
+  /**
    * Delete images backup
    */
   static async deleteImagesBackup(req: Request, res: Response) {

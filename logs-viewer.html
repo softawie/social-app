@@ -640,13 +640,14 @@
                     
                     <div class="button-row">
                         <button onclick="createImagesBackup()" class="btn-success">📦 Create Images Backup</button>
+                        <button onclick="loadImagesBackups()" class="btn-primary">🔄 Refresh List</button>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
-                        <label for="restoreFile">Restore from ZIP:</label>
+                        <label for="restoreFile">Upload & Restore from ZIP file:</label>
                         <input type="file" id="restoreFile" accept=".zip" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
                         <div class="button-row" style="margin-top: 8px;">
-                            <button onclick="restoreImagesBackup()" class="btn-info">📥 Restore Images</button>
+                            <button onclick="restoreImagesBackup()" class="btn-info">📤 Upload & Restore</button>
                         </div>
                     </div>
                     
@@ -1391,6 +1392,7 @@ User Agent: ${log.userAgent}
                 ADMIN_TOKEN = localStorage.getItem('admin_token') || '';
                 updateTokenStatus();
                 loadMongoBackups();
+                loadImagesBackups();
                 loadBackupHistory();
                 loadAutoBackupStats();
                 loadCleanupStats();
@@ -1558,11 +1560,119 @@ User Agent: ${log.userAgent}
                 if (result.success) {
                     showBackupStatus(`Images backup created successfully. Size: ${(result.data.size / 1024 / 1024).toFixed(2)} MB`);
                     loadBackupHistory();
+                    loadImagesBackups(); // Refresh the images backup list
                 } else {
                     showBackupStatus(result.message, 'error');
                 }
             } catch (error) {
                 showBackupStatus(`Error creating images backup: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadImagesBackups() {
+            if (!ADMIN_TOKEN) {
+                document.getElementById('imagesBackupsList').innerHTML = '<div style="color: orange; padding: 10px;">Please save an admin token to view backups</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/images/list`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const listDiv = document.getElementById('imagesBackupsList');
+                if (result.success && result.data.length > 0) {
+                    listDiv.innerHTML = result.data.map(backup => `
+                        <div style="background: white; padding: 10px; margin: 5px 0; border-radius: 4px; display: flex; justify-content: between; align-items: center;">
+                            <div>
+                                <strong>${backup.fileName}</strong><br>
+                                <small>Size: ${backup.sizeMB} MB | Created: ${backup.createdAt}</small>
+                            </div>
+                            <div style="margin-left: auto; display: flex; gap: 5px;">
+                                <button onclick="restoreImagesBackupFromFile('${backup.fileName}')" class="btn-info" style="padding: 5px 10px; font-size: 12px;">📥 Restore</button>
+                                <button onclick="deleteImagesBackup('${backup.fileName}')" class="btn-danger" style="padding: 5px 10px; font-size: 12px;">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    listDiv.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No images backups found</div>';
+                }
+            } catch (error) {
+                document.getElementById('imagesBackupsList').innerHTML = `<div style="color: red; padding: 10px;">Error loading backups: ${error.message}</div>`;
+            }
+        }
+
+        async function restoreImagesBackupFromFile(fileName) {
+            if (!confirm(`Are you sure you want to restore from ${fileName}? This will overwrite existing images.`)) {
+                return;
+            }
+
+            showBackupStatus('Restoring images backup... This may take a moment.', 'info');
+
+            try {
+                // Create a FormData with the file path
+                const formData = new FormData();
+                
+                // We need to fetch the file first, then create a blob to upload
+                const fileResponse = await fetch(`${API_BASE}/backup/images/download/${fileName}`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+
+                if (!fileResponse.ok) {
+                    throw new Error('Failed to download backup file');
+                }
+
+                const blob = await fileResponse.blob();
+                formData.append('backupZip', blob, fileName);
+
+                const response = await fetch(`${API_BASE}/backup/images/restore`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showBackupStatus('Images backup restored successfully from ' + fileName);
+                    loadBackupHistory();
+                    loadImagesBackups();
+                } else {
+                    showBackupStatus(result.message, 'error');
+                }
+            } catch (error) {
+                showBackupStatus(`Error restoring backup: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteImagesBackup(fileName) {
+            if (!confirm(`Are you sure you want to delete ${fileName}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/backup/images/delete/${fileName}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showBackupStatus('Images backup deleted successfully');
+                    loadImagesBackups();
+                } else {
+                    showBackupStatus(result.message, 'error');
+                }
+            } catch (error) {
+                showBackupStatus(`Error deleting backup: ${error.message}`, 'error');
             }
         }
 
@@ -1596,6 +1706,7 @@ User Agent: ${log.userAgent}
                     showBackupStatus('Images backup restored successfully');
                     fileInput.value = '';
                     loadBackupHistory();
+                    loadImagesBackups(); // Refresh the images backup list
                 } else {
                     showBackupStatus(result.message, 'error');
                 }
