@@ -638,17 +638,15 @@
                 <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
                     <h3>🖼️ Images Backup</h3>
                     
-                    <div class="button-row">
-                        <button onclick="createImagesBackup()" class="btn-success">📦 Create Images Backup</button>
-                        <button onclick="loadImagesBackups()" class="btn-primary">🔄 Refresh List</button>
-                    </div>
-                    
                     <div style="margin-bottom: 15px;">
                         <label for="restoreFile">Upload & Restore from ZIP file:</label>
                         <input type="file" id="restoreFile" accept=".zip" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
-                        <div class="button-row" style="margin-top: 8px;">
-                            <button onclick="restoreImagesBackup()" class="btn-info">📤 Upload & Restore</button>
-                        </div>
+                    </div>
+                    
+                    <div class="button-row">
+                        <button onclick="createImagesBackup()" class="btn-success">📦 Create Backup</button>
+                        <button onclick="loadImagesBackups()" class="btn-primary">🔄 Refresh List</button>
+                        <button onclick="restoreImagesBackup()" class="btn-info">📤 Upload & Restore</button>
                     </div>
                     
                     <div id="imagesBackupsList" style="max-height: 300px; overflow-y: auto;">
@@ -727,11 +725,22 @@
                 alert('Please paste a valid admin access token (JWT).');
                 return;
             }
+            
+            // Basic JWT format validation
+            const jwtParts = ADMIN_TOKEN.split('.');
+            if (jwtParts.length !== 3) {
+                alert('Invalid JWT token format. A valid JWT should have 3 parts separated by dots.');
+                return;
+            }
+            
             localStorage.setItem('admin_token', ADMIN_TOKEN);
             updateTokenStatus();
-            // Try loading immediately
-            loadStats();
-            loadLogs();
+            
+            // Show success message
+            showMessage('Token saved successfully! Testing connection...', 'success');
+            
+            // Try loading immediately with better error handling
+            testConnection();
         }
 
         function clearAdminToken() {
@@ -740,15 +749,94 @@
             const input = document.getElementById('adminTokenInput');
             if (input) input.value = '';
             updateTokenStatus();
+            hideMessage();
         }
 
-        function authFetch(url, options = {}) {
+        function showMessage(message, type = 'info') {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.className = type === 'success' ? 'success' : 'error';
+            errorDiv.style.display = 'block';
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    hideMessage();
+                }, 3000);
+            }
+        }
+
+        function hideMessage() {
+            const errorDiv = document.getElementById('error');
+            errorDiv.style.display = 'none';
+        }
+
+        async function testConnection() {
+            try {
+                // First test basic connectivity
+                await authFetch(`${API_BASE}/logs/stats`);
+                showMessage('✅ Connection successful! Token is valid and has admin privileges.', 'success');
+                
+                // Load data after successful connection test
+                setTimeout(() => {
+                    loadStats();
+                    loadLogs();
+                }, 1000);
+            } catch (error) {
+                showMessage(`❌ Connection failed: ${error.message}`, 'error');
+                console.error('Connection test failed:', error);
+            }
+        }
+
+        async function authFetch(url, options = {}) {
             if (!ADMIN_TOKEN) {
                 throw new Error('Admin token not set');
             }
             // Use 'admin' bearer scheme to align with verifyToken expectations
             const headers = Object.assign({}, options.headers || {}, { Authorization: `admin ${ADMIN_TOKEN}` });
-            return fetch(url, Object.assign({}, options, { headers }));
+            
+            try {
+                const response = await fetch(url, Object.assign({}, options, { headers }));
+                
+                // Handle different HTTP status codes with specific messages
+                if (!response.ok) {
+                    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.message) {
+                            errorMessage = errorData.message;
+                        }
+                    } catch (jsonError) {
+                        // If response is not JSON, use the default error message
+                    }
+                    
+                    // Provide specific guidance for common errors
+                    switch (response.status) {
+                        case 401:
+                            errorMessage = 'Unauthorized: Invalid or expired admin token. Please check your token and try again.';
+                            break;
+                        case 403:
+                            errorMessage = 'Forbidden: Your token does not have admin privileges required for this operation.';
+                            break;
+                        case 404:
+                            errorMessage = 'API endpoint not found. Please check if the server is running correctly.';
+                            break;
+                        case 500:
+                            errorMessage = 'Server error: ' + errorMessage;
+                            break;
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+                
+                return response;
+            } catch (fetchError) {
+                if (fetchError.name === 'TypeError' && fetchError.message.includes('fetch')) {
+                    throw new Error('Cannot connect to server. Please ensure the API server is running on http://localhost:3000');
+                }
+                throw fetchError;
+            }
         }
 
         // JSON Syntax Highlighting Functions
@@ -1058,6 +1146,7 @@
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
+                showMessage(`Failed to load statistics: ${error.message}`, 'error');
             }
         }
 
@@ -1089,8 +1178,7 @@
                     throw new Error(data.message || 'Failed to load logs');
                 }
             } catch (err) {
-                error.textContent = `Error: ${err.message}`;
-                error.style.display = 'block';
+                showMessage(`Failed to load logs: ${err.message}`, 'error');
                 logsBody.innerHTML = '<tr><td colspan="8">Failed to load logs</td></tr>';
             } finally {
                 loading.style.display = 'none';
