@@ -5,6 +5,8 @@ import authRouter from "@modules/auth/auth.controller";
 import logsRouter from "@modules/logs/logs.controller";
 import backupRouter from "@modules/backup/backup.routes";
 import postRouter from "@modules/post/post.routes";
+import commentRouter from "@modules/comment/comment.routes";
+import friendRequestRouter from "@modules/friend-request/friend-request.routes";
 import { globalErrorHandler, NotFoundException } from "@utils/globalError.handler";
 import * as cors from "cors";
 import helmet from "helmet";
@@ -45,6 +47,8 @@ const bootstrap = async (app: Express) => {
   app.use("/api", logsRouter);
   app.use("/api/backup", backupRouter);
   app.use("/api/posts", postRouter);
+  app.use("/api/comments", commentRouter);
+  app.use("/api/friend-requests", friendRequestRouter);
   
   // Public app config for static tools (e.g., logs viewer)
   app.get("/app-config", (req, res) => {
