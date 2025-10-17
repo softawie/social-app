@@ -10,6 +10,275 @@
             margin: 0;
             padding: 20px;
             background-color: #f5f5f5;
+            transition: all 0.3s ease;
+        }
+        
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .container {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .nav-tab {
+            background: #3a3a3a;
+            color: #e0e0e0;
+            border-color: #4a4a4a;
+        }
+        
+        body.dark-mode .nav-tab:hover {
+            background: #4a4a4a;
+        }
+        
+        body.dark-mode .nav-tab.active {
+            background: #2d2d2d;
+            color: #4fc3f7;
+        }
+        
+        body.dark-mode .filters,
+        body.dark-mode .stats {
+            background: #3a3a3a;
+            border-color: #4a4a4a;
+        }
+        
+        body.dark-mode input,
+        body.dark-mode select {
+            background: #4a4a4a;
+            color: #e0e0e0;
+            border-color: #5a5a5a;
+        }
+        
+        body.dark-mode .logs-table {
+            background: #3a3a3a;
+        }
+        
+        body.dark-mode .logs-table th {
+            background: #4a4a4a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .logs-table td {
+            border-color: #4a4a4a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .logs-table tbody tr:hover {
+            background: #4a4a4a;
+        }
+        
+        /* Dark mode for buttons */
+        body.dark-mode .btn-primary {
+            background-color: #4fc3f7;
+            border-color: #4fc3f7;
+            color: #000;
+        }
+        
+        body.dark-mode .btn-success {
+            background-color: #66bb6a;
+            border-color: #66bb6a;
+            color: #000;
+        }
+        
+        body.dark-mode .btn-warning {
+            background-color: #ffb74d;
+            border-color: #ffb74d;
+            color: #000;
+        }
+        
+        body.dark-mode .btn-danger {
+            background-color: #ef5350;
+            border-color: #ef5350;
+            color: #fff;
+        }
+        
+        body.dark-mode .btn-info {
+            background-color: #26c6da;
+            border-color: #26c6da;
+            color: #000;
+        }
+        
+        body.dark-mode .btn-secondary {
+            background-color: #78909c;
+            border-color: #78909c;
+            color: #fff;
+        }
+        
+        /* Dark mode for Redis terminal */
+        body.dark-mode #redisLogs {
+            background: #0d1117 !important;
+            color: #58a6ff !important;
+            border: 1px solid #30363d;
+        }
+        
+        /* Dark mode for various sections */
+        body.dark-mode div[style*="background: #f8f9fa"],
+        body.dark-mode div[style*="background:#f8f9fa"] {
+            background: #3a3a3a !important;
+        }
+
+        /* Dark mode override for softened light background sections */
+        body.dark-mode div[style*="background: #eef2f7"] {
+            background: #3a3a3a !important;
+        }
+
+        /* Improve readability of Redis logs */
+        #redisLogs {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* Light theme improvements for Redis logs */
+        body:not(.dark-mode) #redisLogs {
+            background: #f8f9fa !important;
+            color: #2c3e50 !important;
+            border: 1px solid #dee2e6 !important;
+        }
+        
+        /* Light theme log entry styling */
+        body:not(.dark-mode) #redisLogs .log-entry {
+            background: rgba(52, 152, 219, 0.05) !important;
+            border-left-color: #3498db !important;
+        }
+        
+        /* Light theme level colors */
+        body:not(.dark-mode) #redisLogs .level-info { color: #27ae60 !important; }
+        body:not(.dark-mode) #redisLogs .level-warn { color: #f39c12 !important; }
+        body:not(.dark-mode) #redisLogs .level-error { color: #e74c3c !important; }
+        body:not(.dark-mode) #redisLogs .level-debug { color: #3498db !important; }
+        
+        /* Light theme key highlighting */
+        body:not(.dark-mode) #redisLogs .key-highlight {
+            color: #8e44ad !important;
+            background: rgba(142, 68, 173, 0.1) !important;
+            padding: 2px 4px !important;
+            border-radius: 3px !important;
+        }
+        
+        body.dark-mode div[style*="background: white"],
+        body.dark-mode div[style*="background:white"] {
+            background: #2d2d2d !important;
+        }
+        
+        body.dark-mode div[style*="background: #e3f2fd"] {
+            background: #1e3a5f !important;
+        }
+        
+        body.dark-mode div[style*="background: #e8f5e8"] {
+            background: #1e3a1e !important;
+        }
+        
+        body.dark-mode div[style*="background: #fff3e0"] {
+            background: #3a2e1e !important;
+        }
+        
+        body.dark-mode div[style*="background: #ffebee"] {
+            background: #3a1e1e !important;
+        }
+        
+        body.dark-mode div[style*="background: #f3e5f5"] {
+            background: #2e1e3a !important;
+        }
+        
+        body.dark-mode div[style*="background: #e9ecef"] {
+            background: #3a3a3a !important;
+        }
+        
+        /* Dark mode for log details and modals */
+        body.dark-mode .log-details,
+        body.dark-mode .modal-content,
+        body.dark-mode .popup-content {
+            background: #2d2d2d !important;
+            color: #e0e0e0 !important;
+            border-color: #4a4a4a !important;
+        }
+        
+        body.dark-mode .log-details pre,
+        body.dark-mode .log-details code {
+            background: #1a1a1a !important;
+            color: #58a6ff !important;
+            border: 1px solid #30363d !important;
+        }
+        
+        body.dark-mode .log-details h3,
+        body.dark-mode .log-details h4,
+        body.dark-mode .log-details strong {
+            color: #4fc3f7 !important;
+        }
+        
+        /* Dark mode for any dynamically created content */
+        body.dark-mode * {
+            scrollbar-width: thin;
+            scrollbar-color: #4a4a4a #2d2d2d;
+        }
+        
+        body.dark-mode *::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        body.dark-mode *::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+        
+        body.dark-mode *::-webkit-scrollbar-thumb {
+            background: #4a4a4a;
+            border-radius: 4px;
+        }
+        
+        body.dark-mode *::-webkit-scrollbar-thumb:hover {
+            background: #5a5a5a;
+        }
+        
+        /* Dark mode for modal and detail sections */
+        body.dark-mode .modal {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        body.dark-mode .modal-content {
+            background-color: #2d2d2d !important;
+            color: #e0e0e0 !important;
+            border: 1px solid #4a4a4a !important;
+        }
+        
+        body.dark-mode .detail-section {
+            background-color: #3a3a3a !important;
+            border-left-color: #4fc3f7 !important;
+            color: #e0e0e0 !important;
+        }
+        
+        body.dark-mode .detail-title {
+            color: #4fc3f7 !important;
+        }
+        
+        body.dark-mode .detail-content {
+            color: #e0e0e0 !important;
+            background-color: #2d2d2d !important;
+        }
+        
+        body.dark-mode .json-content {
+            background-color: #1a1a1a !important;
+            color: #58a6ff !important;
+            border: 1px solid #30363d !important;
+        }
+        
+        body.dark-mode .close {
+            color: #ccc !important;
+        }
+        
+        body.dark-mode .close:hover {
+            color: #fff !important;
+        }
+        
+        /* Override inline styles in dark mode */
+        body.dark-mode div[style*="background-color: #fff3cd"] {
+            background-color: #3a2e1e !important;
+        }
+        
+        body.dark-mode div[style*="color: #856404"] {
+            color: #ffb74d !important;
         }
         .container {
             max-width: 1200px;
@@ -23,6 +292,69 @@
             color: #333;
             text-align: center;
             margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        body.dark-mode h1 {
+            color: #e0e0e0;
+        }
+        
+        .theme-toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .theme-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .theme-label {
+            font-size: 14px;
+            color: #666;
+            margin-left: 10px;
+        }
+        
+        body.dark-mode .theme-label {
+            color: #ccc;
         }
         .nav-tabs {
             display: flex;
@@ -494,12 +826,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔧 System Management Dashboard</h1>
+        <h1>
+            🔧 System Management Dashboard
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="theme-label">🌙</span>
+                <label class="theme-toggle">
+                    <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                    <span class="slider"></span>
+                </label>
+                <span class="theme-label">☀️</span>
+            </div>
+        </h1>
         
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
             <div class="nav-tab active" onclick="switchTab('logs')">📊 Logs Viewer</div>
             <div class="nav-tab" onclick="switchTab('backup')">💾 Backup Manager</div>
+            <div class="nav-tab" onclick="switchTab('redis')">🔴 Redis Monitor</div>
         </div>
         
         <!-- Logs Tab Content -->
@@ -553,6 +896,7 @@
                 <button onclick="loadLogs()" class="btn-primary">🔄 Refresh</button>
                 <button onclick="clearLogs()" class="btn-danger">🗑️ Clear Logs</button>
                 <button onclick="exportLogs()" class="btn-success">📥 Export</button>
+                <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" class="btn-secondary">⏸️ Disable Auto-Refresh</button>
             </div>
             
             <!-- Test Enhanced Logging Row -->
@@ -702,6 +1046,208 @@
 
             <!-- Status Messages -->
             <div id="backupStatus" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- Redis Tab Content -->
+        <div id="redis-tab" class="tab-content">
+
+            <!-- Cache Management Section -->
+            <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                <!-- Advanced Cache Viewer -->
+                <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <h3>👁️ Advanced Cache Viewer</h3>
+                    
+                    <!-- Search and Filter Controls -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="cachePattern">Search Pattern:</label>
+                        <input type="text" id="cachePattern" value="*" placeholder="e.g., cache:*, user:*, api:*posts*" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div style="flex: 1;">
+                            <label for="cacheLimit">Limit:</label>
+                            <select id="cacheLimit" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="50">50 keys</option>
+                                <option value="100" selected>100 keys</option>
+                                <option value="200">200 keys</option>
+                                <option value="500">500 keys</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label>
+                                <input type="checkbox" id="detailedView" onchange="toggleDetailedView()"> 
+                                Detailed View (TTL, Size, Type)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="button-row">
+                        <button onclick="viewCacheKeys()" class="btn-primary">🔍 Search Keys</button>
+                        <button onclick="getCacheValue()" class="btn-info">📄 Get Value</button>
+                        <button onclick="refreshCacheView()" class="btn-secondary">🔄 Refresh</button>
+                        <button onclick="exportCacheKeys()" class="btn-info">📤 Export</button>
+                    </div>
+                    
+                    <!-- Pagination Controls -->
+                    <div id="cachePagination" style="margin: 10px 0; display: none;">
+                        <button onclick="prevCachePage()" class="btn-secondary" id="prevPageBtn">⬅️ Previous</button>
+                        <span id="cachePageInfo" style="margin: 0 15px; font-weight: bold;">Page 1</span>
+                        <button onclick="nextCachePage()" class="btn-secondary" id="nextPageBtn">➡️ Next</button>
+                    </div>
+                    
+                    <div id="cacheKeys" style="max-height: 400px; overflow-y: auto; background: white; padding: 15px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 11px;">
+                        <!-- Cache keys will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Advanced Cache Management -->
+                <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <h3>🗑️ Advanced Cache Management</h3>
+                    
+                    <!-- Key Operations -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="specificKey">Selected Key:</label>
+                        <input type="text" id="specificKey" placeholder="Select a key from the list or type manually" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <!-- TTL Management -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="keyTTL">Set TTL (seconds):</label>
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <input type="number" id="keyTTL" placeholder="3600" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <button onclick="setKeyTTL()" class="btn-info">⏰ Set TTL</button>
+                            <button onclick="getKeyInfo()" class="btn-secondary">ℹ️ Info</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Pattern Operations -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="deletePattern">Delete Pattern:</label>
+                        <input type="text" id="deletePattern" placeholder="cache:posts:*, user:*, api:*" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div style="margin-bottom: 15px;">
+                        <label>Quick Clear Actions:</label>
+                        <div class="button-row" style="margin-top: 5px;">
+                            <button onclick="clearAllCache('api')" class="btn-warning" style="font-size: 11px;">🧹 Clear API Cache</button>
+                            <button onclick="clearAllCache('cache')" class="btn-warning" style="font-size: 11px;">🧹 Clear App Cache</button>
+                            <button onclick="clearAllCache('user')" class="btn-warning" style="font-size: 11px;">🧹 Clear User Cache</button>
+                            <button onclick="clearAllCache('session')" class="btn-warning" style="font-size: 11px;">🧹 Clear Sessions</button>
+                        </div>
+                    </div>
+
+                    <!-- Entity Cache Management -->
+                    <div style="margin-bottom: 15px;">
+                        <label>Entity Cache Management:</label>
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <input type="text" id="entityType" placeholder="e.g., user, post, comment" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="entityId" placeholder="Entity ID (optional)" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <button onclick="clearEntityCache()" class="btn-warning">🧹 Clear Entity</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Actions -->
+                    <div class="button-row">
+                        <button onclick="getCacheStats()" class="btn-info">📊 View Stats</button>
+                        <button onclick="clearCachePattern()" class="btn-warning">🧹 Clear Pattern</button>
+                        <button onclick="deleteSpecificKey()" class="btn-danger">❌ Delete Key</button>
+                        <button onclick="flushAllCache()" class="btn-danger" style="background: #dc3545;">💥 Flush All</button>
+                    </div>
+                    
+                    <div id="cacheManagementResult" style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 11px;">
+                        <!-- Management results will be shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Redis Logs Section -->
+            <div style="background: #eef2f7; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>📝 Real-time Redis Cache Logs</h3>
+                
+                <!-- Log Filters -->
+                <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: end;">
+                    <div style="flex: 1;">
+                        <label for="logLevel">Filter by Level:</label>
+                        <select id="logLevel" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">All Levels</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARN">WARN</option>
+                            <option value="ERROR">ERROR</option>
+                            <option value="DEBUG">DEBUG</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="logOperation">Filter by Operation:</label>
+                        <select id="logOperation" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">All Operations</option>
+                            <option value="CACHE_HIT">Cache Hits</option>
+                            <option value="CACHE_MISS">Cache Misses</option>
+                            <option value="CACHE_SET">Cache Sets</option>
+                            <option value="CACHE_DELETE">Cache Deletes</option>
+                            <option value="CACHE_CLEAR">Cache Clears</option>
+                            <option value="REDIS_CONNECT">Redis Connect</option>
+                            <option value="REDIS_ERROR">Redis Errors</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="logLimit">Limit:</label>
+                        <select id="logLimit" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="50">50 logs</option>
+                            <option value="100" selected>100 logs</option>
+                            <option value="200">200 logs</option>
+                            <option value="500">500 logs</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Control Buttons -->
+                <div class="button-row">
+                    <button onclick="getRedisLogs()" class="btn-primary">📋 Refresh Logs</button>
+                    <button onclick="clearRedisLogs()" class="btn-danger">🗑️ Clear Logs</button>
+                    <button onclick="toggleRedisAutoRefresh()" class="btn-secondary" id="redisAutoRefreshBtn">🔄 Auto Refresh (OFF)</button>
+                    <button onclick="exportRedisLogs()" class="btn-info">📤 Export</button>
+                </div>
+                
+                <!-- Log Statistics -->
+                <div id="logStats" style="display: none; background: #e3f2fd; padding: 10px; border-radius: 4px; margin: 10px 0; font-size: 12px;">
+                    <!-- Log statistics will be shown here -->
+                </div>
+                
+                <!-- Logs Display -->
+                <div id="redisLogs" style="max-height: 450px; overflow-y: auto; background: #0d1117; color: #58a6ff; padding: 18px 20px; border-radius: 8px; margin-top: 12px; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace; font-size: 14px; line-height: 1.6; border: 1px solid #30363d;">
+                    <div style="color: #666; text-align: center; padding: 25px; font-size: 14px;">
+                        Click "Refresh Logs" to load real-time Redis cache operation logs
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memory Usage Section -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>💾 Memory Usage</h3>
+                <div class="button-row">
+                    <button onclick="getMemoryUsage()" class="btn-primary">📊 Memory Stats</button>
+                    <button onclick="getKeyspaceInfo()" class="btn-info">🔑 Keyspace Info</button>
+                </div>
+                <div id="memoryUsage" style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
+                    <p style="color: #666; margin: 0;">Click "Memory Stats" to see Redis memory usage</p>
+                </div>
+            </div>
+
+            <!-- Redis Configuration -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>⚙️ Configuration</h3>
+                <div class="button-row">
+                    <button onclick="getRedisConfig()" class="btn-primary">📋 View Config</button>
+                    <button onclick="getRedisClients()" class="btn-info">👥 Active Clients</button>
+                </div>
+                <div id="redisConfig" style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 12px;">
+                    <p style="color: #666; margin: 0;">Click "View Config" to see Redis configuration</p>
+                </div>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="redisStatusMessages" style="margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -1294,11 +1840,48 @@
             }
         }
 
-        // Auto-refresh every 30 seconds
-        setInterval(() => {
-            loadLogs(currentOffset);
-            loadStats();
-        }, 30000);
+        // Auto-refresh functionality (controlled)
+        let autoRefreshInterval = null;
+        let autoRefreshEnabled = true;
+
+        function startAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+            autoRefreshInterval = setInterval(() => {
+                if (autoRefreshEnabled) {
+                    loadLogs(currentOffset);
+                    loadStats();
+                }
+            }, 30000);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        function toggleAutoRefresh() {
+            const btn = document.getElementById('autoRefreshBtn');
+            autoRefreshEnabled = !autoRefreshEnabled;
+            
+            if (autoRefreshEnabled) {
+                btn.innerHTML = '⏸️ Disable Auto-Refresh';
+                btn.className = 'btn-secondary';
+                startAutoRefresh();
+                showMessage('✅ Auto-refresh enabled (30s intervals)', 'success');
+            } else {
+                btn.innerHTML = '▶️ Enable Auto-Refresh';
+                btn.className = 'btn-success';
+                stopAutoRefresh();
+                showMessage('⏸️ Auto-refresh disabled', 'info');
+            }
+        }
+
+        // Start auto-refresh by default (but can be disabled)
+        startAutoRefresh();
 
         // Add event listeners for automatic filtering
         function setupFilterListeners() {
@@ -1343,6 +1926,15 @@
         function displayLogModal(log) {
             const modal = document.getElementById('logModal');
             const modalContent = document.getElementById('modalContent');
+            
+            // Add dark mode class to modal if body has dark mode
+            if (document.body.classList.contains('dark-mode')) {
+                modal.classList.add('dark-mode');
+                modalContent.classList.add('dark-mode');
+            } else {
+                modal.classList.remove('dark-mode');
+                modalContent.classList.remove('dark-mode');
+            }
             
             // Reset search when opening new modal
             clearSearch();
@@ -1999,6 +2591,1354 @@ User Agent: ${log.userAgent}
                 showBackupStatus(`Error triggering auto-backup: ${error.message}`, 'error');
             }
         }
+
+        // Redis Functions
+        let redisMonitoringInterval = null;
+        let redisAutoRefreshInterval = null;
+        let currentCachePage = 0;
+        let cachePageSize = 100;
+        let totalCacheKeys = 0;
+
+        // Redis Health Check
+        async function checkRedisHealth() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/info`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                const statusDiv = document.getElementById('redisStatus');
+                
+                if (result.success) {
+                    const info = result.data;
+                    const uptime = info.uptime_in_seconds;
+                    const uptimeFormatted = formatUptime(uptime);
+                    const memoryUsed = info.used_memory_human || 'Unknown';
+                    const connectedClients = info.connected_clients || 0;
+                    const totalKeys = info.total_keys || 0;
+                    
+                    statusDiv.innerHTML = `
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
+                            <div style="color: #28a745; font-weight: bold; font-size: 16px; margin-bottom: 10px;">
+                                ✅ Redis is Running
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px;">
+                                <div>
+                                    <strong>Version:</strong> ${info.redis_version || 'Unknown'}<br>
+                                    <strong>Uptime:</strong> ${uptimeFormatted}<br>
+                                    <strong>Mode:</strong> ${info.redis_mode || 'standalone'}
+                                </div>
+                                <div>
+                                    <strong>Memory Used:</strong> ${memoryUsed}<br>
+                                    <strong>Connected Clients:</strong> ${connectedClients}<br>
+                                    <strong>Total Keys:</strong> ${totalKeys}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <button onclick="getRedisStats()" class="btn-info" style="margin-right: 10px;">📊 View Stats</button>
+                            <button onclick="viewCacheKeys()" class="btn-secondary">🔍 Browse Cache</button>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `<div style="color: red;">❌ Redis Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                const statusDiv = document.getElementById('redisStatus');
+                let errorMessage = error.message;
+                
+                // Handle specific error cases
+                if (error.message.includes('Unexpected token')) {
+                    errorMessage = 'Authentication failed or Redis service unavailable';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Cannot connect to Redis service';
+                }
+                
+                statusDiv.innerHTML = `
+                    <div style="background: #ffebee; padding: 15px; border-radius: 4px; border-left: 4px solid #f44336;">
+                        <div style="color: #d32f2f; font-weight: bold; margin-bottom: 5px;">
+                            ❌ Redis Connection Failed
+                        </div>
+                        <div style="color: #666; font-size: 12px;">
+                            ${errorMessage}
+                        </div>
+                        <div style="margin-top: 10px; font-size: 11px; color: #999;">
+                            💡 Make sure Redis is running and you have admin access
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Helper function to format uptime
+        function formatUptime(seconds) {
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            
+            if (days > 0) {
+                return `${days}d ${hours}h ${minutes}m`;
+            } else if (hours > 0) {
+                return `${hours}h ${minutes}m`;
+            } else {
+                return `${minutes}m`;
+            }
+        }
+
+        // Get Redis Info
+        async function getRedisInfo() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/info`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const statusDiv = document.getElementById('redisStatus');
+                if (result.success) {
+                    const info = result.data;
+                    statusDiv.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                            <div style="background: #e8f5e8; padding: 10px; border-radius: 4px;">
+                                <div style="font-weight: bold; color: #388e3c;">Version</div>
+                                <div>${info.redis_version || 'N/A'}</div>
+                            </div>
+                            <div style="background: #e3f2fd; padding: 10px; border-radius: 4px;">
+                                <div style="font-weight: bold; color: #1976d2;">Connected Clients</div>
+                                <div>${info.connected_clients || 'N/A'}</div>
+                            </div>
+                            <div style="background: #fff3e0; padding: 10px; border-radius: 4px;">
+                                <div style="font-weight: bold; color: #f57c00;">Used Memory</div>
+                                <div>${info.used_memory_human || 'N/A'}</div>
+                            </div>
+                            <div style="background: #f3e5f5; padding: 10px; border-radius: 4px;">
+                                <div style="font-weight: bold; color: #7b1fa2;">Total Keys</div>
+                                <div>${info.total_keys || 'N/A'}</div>
+                            </div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 11px;">
+                            <strong>Uptime:</strong> ${info.uptime_in_days || 'N/A'} days<br>
+                            <strong>Role:</strong> ${info.role || 'N/A'}<br>
+                            <strong>Max Memory:</strong> ${info.maxmemory_human || 'Not set'}
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('redisStatus').innerHTML = `<div style="color: red;">Error getting Redis info: ${error.message}</div>`;
+            }
+        }
+
+        // Get Redis Statistics
+        async function getRedisStats() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const statusDiv = document.getElementById('redisStatus');
+                if (result.success) {
+                    const stats = result.data;
+                    statusDiv.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+                            <div style="background: #e8f5e8; padding: 10px; border-radius: 4px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: bold; color: #388e3c;">${stats.commands_processed || 0}</div>
+                                <div style="font-size: 12px;">Commands Processed</div>
+                            </div>
+                            <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: bold; color: #1976d2;">${stats.keyspace_hits || 0}</div>
+                                <div style="font-size: 12px;">Keyspace Hits</div>
+                            </div>
+                            <div style="background: #ffebee; padding: 10px; border-radius: 4px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: bold; color: #d32f2f;">${stats.keyspace_misses || 0}</div>
+                                <div style="font-size: 12px;">Keyspace Misses</div>
+                            </div>
+                            <div style="background: #fff3e0; padding: 10px; border-radius: 4px; text-align: center;">
+                                <div style="font-size: 16px; font-weight: bold; color: #f57c00;">${stats.hit_rate || '0%'}</div>
+                                <div style="font-size: 12px;">Hit Rate</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('redisStatus').innerHTML = `<div style="color: red;">Error getting Redis stats: ${error.message}</div>`;
+            }
+        }
+
+        // Enhanced View Cache Keys with pagination and detailed info
+        async function viewCacheKeys() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            const pattern = document.getElementById('cachePattern').value || '*';
+            const limit = document.getElementById('cacheLimit').value || '100';
+            const detailed = document.getElementById('detailedView').checked;
+            const offset = currentCachePage * parseInt(limit);
+            
+            try {
+                const url = `${API_BASE}/redis/keys?pattern=${encodeURIComponent(pattern)}&limit=${limit}&offset=${offset}&detailed=${detailed}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const keysDiv = document.getElementById('cacheKeys');
+                if (result.success) {
+                    const data = result.data;
+                    totalCacheKeys = data.total;
+                    cachePageSize = parseInt(limit);
+                    
+                    updatePagination();
+                    
+                    if (data.keys.length === 0) {
+                        keysDiv.innerHTML = '<div style="color: #666;">No keys found matching the pattern</div>';
+                    } else {
+                        if (detailed) {
+                            // Detailed view with table
+                            keysDiv.innerHTML = `
+                                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                                    <thead>
+                                        <tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">
+                                            <th style="padding: 8px; text-align: left; border-right: 1px solid #ddd;">Key</th>
+                                            <th style="padding: 8px; text-align: left; border-right: 1px solid #ddd;">Type</th>
+                                            <th style="padding: 8px; text-align: left; border-right: 1px solid #ddd;">TTL</th>
+                                            <th style="padding: 8px; text-align: left; border-right: 1px solid #ddd;">Size</th>
+                                            <th style="padding: 8px; text-align: left;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.keys.map((keyInfo, index) => `
+                                            <tr style="border-bottom: 1px solid #eee; cursor: pointer;" onclick="selectKey('${keyInfo.key}')">
+                                                <td style="padding: 6px; border-right: 1px solid #eee; max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${keyInfo.key}">${keyInfo.key}</td>
+                                                <td style="padding: 6px; border-right: 1px solid #eee;">
+                                                    <span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 10px;">${keyInfo.type}</span>
+                                                </td>
+                                                <td style="padding: 6px; border-right: 1px solid #eee;">
+                                                    <span style="color: ${keyInfo.ttl === 'No expiration' ? '#f57c00' : '#388e3c'};">${keyInfo.ttl}</span>
+                                                </td>
+                                                <td style="padding: 6px; border-right: 1px solid #eee;">${keyInfo.size}</td>
+                                                <td style="padding: 6px;">
+                                                    <button onclick="event.stopPropagation(); selectKey('${keyInfo.key}'); getKeyInfo();" style="padding: 2px 6px; font-size: 10px; margin-right: 5px;" class="btn-info">ℹ️</button>
+                                                    <button onclick="event.stopPropagation(); selectKey('${keyInfo.key}'); deleteSpecificKey();" style="padding: 2px 6px; font-size: 10px;" class="btn-danger">❌</button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            // Simple list view
+                            keysDiv.innerHTML = data.keys.map((key, index) => 
+                                `<div style="padding: 5px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="selectKey('${key}')">
+                                    <span>${offset + index + 1}. ${key}</span>
+                                    <div>
+                                        <button onclick="event.stopPropagation(); selectKey('${key}'); getKeyInfo();" style="padding: 2px 6px; font-size: 10px; margin-left: 5px;" class="btn-info">ℹ️</button>
+                                        <button onclick="event.stopPropagation(); selectKey('${key}'); deleteSpecificKey();" style="padding: 2px 6px; font-size: 10px; margin-left: 5px;" class="btn-danger">❌</button>
+                                    </div>
+                                </div>`
+                            ).join('');
+                        }
+                    }
+                } else {
+                    keysDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheKeys').innerHTML = `<div style="color: red;">Error viewing cache keys: ${error.message}</div>`;
+            }
+        }
+
+        // Update pagination controls
+        function updatePagination() {
+            const paginationDiv = document.getElementById('cachePagination');
+            const pageInfo = document.getElementById('cachePageInfo');
+            const prevBtn = document.getElementById('prevPageBtn');
+            const nextBtn = document.getElementById('nextPageBtn');
+            
+            const totalPages = Math.ceil(totalCacheKeys / cachePageSize);
+            
+            if (totalPages > 1) {
+                paginationDiv.style.display = 'block';
+                pageInfo.textContent = `Page ${currentCachePage + 1} of ${totalPages} (${totalCacheKeys} total keys)`;
+                prevBtn.disabled = currentCachePage === 0;
+                nextBtn.disabled = currentCachePage >= totalPages - 1;
+            } else {
+                paginationDiv.style.display = 'none';
+            }
+        }
+
+        // Pagination functions
+        function prevCachePage() {
+            if (currentCachePage > 0) {
+                currentCachePage--;
+                viewCacheKeys();
+            }
+        }
+
+        function nextCachePage() {
+            const totalPages = Math.ceil(totalCacheKeys / cachePageSize);
+            if (currentCachePage < totalPages - 1) {
+                currentCachePage++;
+                viewCacheKeys();
+            }
+        }
+
+        // Toggle detailed view
+        function toggleDetailedView() {
+            currentCachePage = 0; // Reset to first page
+            viewCacheKeys();
+        }
+
+        // Get detailed key information
+        async function getKeyInfo() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            const key = document.getElementById('specificKey').value;
+            if (!key) {
+                showRedisStatus('Please enter a key to get its information', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/key/${encodeURIComponent(key)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('cacheManagementResult');
+                if (result.success) {
+                    const info = result.data;
+                    resultDiv.innerHTML = `
+                        <div style="background: #e8f5e8; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                            <strong>Key Information: ${info.key}</strong>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px;">
+                            <div><strong>Type:</strong> ${info.type}</div>
+                            <div><strong>Size:</strong> ${info.sizeFormatted}</div>
+                            <div><strong>TTL:</strong> ${info.ttl === 'No expiration' ? 'Persistent' : info.ttl + 's'}</div>
+                            <div><strong>Expires:</strong> ${info.expires ? new Date(info.expires).toLocaleString() : 'Never'}</div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheManagementResult').innerHTML = `<div style="color: red;">Error getting key info: ${error.message}</div>`;
+            }
+        }
+
+        // Set TTL for a key
+        async function setKeyTTL() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            const key = document.getElementById('specificKey').value;
+            const ttl = document.getElementById('keyTTL').value;
+            
+            if (!key || !ttl) {
+                showRedisStatus('Please enter both key and TTL', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/key/ttl`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ key, ttl: parseInt(ttl) })
+                });
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('cacheManagementResult');
+                if (result.success) {
+                    resultDiv.innerHTML = `<div style="color: #28a745;">✅ TTL set to ${ttl} seconds for key: ${key}</div>`;
+                    // Refresh the view if detailed view is enabled
+                    if (document.getElementById('detailedView').checked) {
+                        viewCacheKeys();
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheManagementResult').innerHTML = `<div style="color: red;">Error setting TTL: ${error.message}</div>`;
+            }
+        }
+
+        // Export cache keys
+        async function exportCacheKeys() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            const pattern = document.getElementById('cachePattern').value || '*';
+            
+            try {
+                const response = await fetch(`${API_BASE}/redis/keys?pattern=${encodeURIComponent(pattern)}&limit=10000&detailed=true`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = JSON.stringify(result.data, null, 2);
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `redis-cache-keys-${pattern.replace(/[^a-zA-Z0-9]/g, '_')}-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    showRedisStatus('Cache keys exported successfully');
+                } else {
+                    showRedisStatus(result.message, 'error');
+                }
+            } catch (error) {
+                showRedisStatus(`Error exporting cache keys: ${error.message}`, 'error');
+            }
+        }
+
+        // Select a key (helper function)
+        function selectKey(key) {
+            document.getElementById('specificKey').value = key;
+            getCacheValue();
+        }
+
+        // Get Cache Value
+        async function getCacheValue() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            const key = document.getElementById('specificKey').value;
+            if (!key) {
+                showRedisStatus('Please enter a key to get its value', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/get?key=${encodeURIComponent(key)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const keysDiv = document.getElementById('cacheKeys');
+                if (result.success) {
+                    const value = result.data;
+                    keysDiv.innerHTML = `
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                            <strong>Key:</strong> ${key}
+                        </div>
+                        <div style="background: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px; max-height: 200px; overflow-y: auto;">
+                            <pre style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(value, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    keysDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheKeys').innerHTML = `<div style="color: red;">Error getting cache value: ${error.message}</div>`;
+            }
+        }
+
+        // Refresh Cache View
+        function refreshCacheView() {
+            viewCacheKeys();
+        }
+
+        // Clear Cache Pattern (enhanced with parameter support)
+        async function clearCachePattern(quickPattern = null) {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            const pattern = quickPattern || document.getElementById('deletePattern').value;
+            if (!pattern) {
+                showRedisStatus('Please enter a pattern to clear', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete all keys matching pattern: ${pattern}?\n\nThis action cannot be undone!`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/clear-pattern`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pattern })
+                });
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('cacheManagementResult');
+                if (result.success) {
+                    resultDiv.innerHTML = `<div style="color: #28a745;">✅ Cleared ${result.data.deletedCount} keys matching pattern: ${pattern}</div>`;
+                    // Refresh the cache view if it's currently showing
+                    if (document.getElementById('cacheKeys').innerHTML.trim()) {
+                        viewCacheKeys();
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheManagementResult').innerHTML = `<div style="color: red;">Error clearing cache pattern: ${error.message}</div>`;
+            }
+        }
+
+        // Clear All Cache by Prefix
+        async function clearAllCache(prefix) {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to clear ALL ${prefix.toUpperCase()} cache?\n\nThis will delete all keys with prefix "${prefix}:*"\n\nThis action cannot be undone!`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/clear-all`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prefix })
+                });
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('cacheManagementResult');
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div style="color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px;">
+                            ✅ <strong>Cache Cleared Successfully!</strong><br>
+                            Prefix: ${prefix}<br>
+                            Keys Deleted: ${result.data.deletedCount}<br>
+                            Pattern: ${prefix}:*
+                        </div>
+                    `;
+                    // Refresh the cache view if it's currently showing
+                    if (document.getElementById('cacheKeys').innerHTML.trim()) {
+                        viewCacheKeys();
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheManagementResult').innerHTML = `<div style="color: red;">Error clearing all cache: ${error.message}</div>`;
+            }
+        }
+
+        // Clear Entity Cache
+        async function clearEntityCache() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            const entityType = document.getElementById('entityType').value;
+            const entityId = document.getElementById('entityId').value;
+
+            if (!entityType) {
+                showRedisStatus('Please enter an entity type', 'error');
+                return;
+            }
+
+            const confirmMessage = entityId 
+                ? `Are you sure you want to clear cache for ${entityType} with ID: ${entityId}?`
+                : `Are you sure you want to clear ALL cache for entity type: ${entityType}?`;
+
+            if (!confirm(`${confirmMessage}\n\nThis action cannot be undone!`)) {
+                return;
+            }
+
+            try {
+                const body = { entityType };
+                if (entityId) body.entityId = entityId;
+
+                const response = await fetch(`${API_BASE}/redis/clear-entity`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('cacheManagementResult');
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div style="color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px;">
+                            ✅ <strong>Entity Cache Cleared Successfully!</strong><br>
+                            Entity Type: ${result.data.entityType}<br>
+                            ${result.data.entityId ? `Entity ID: ${result.data.entityId}<br>` : ''}
+                            Keys Deleted: ${result.data.deletedCount}
+                        </div>
+                    `;
+                    // Clear the form
+                    document.getElementById('entityType').value = '';
+                    document.getElementById('entityId').value = '';
+                    // Refresh the cache view if it's currently showing
+                    if (document.getElementById('cacheKeys').innerHTML.trim()) {
+                        viewCacheKeys();
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheManagementResult').innerHTML = `<div style="color: red;">Error clearing entity cache: ${error.message}</div>`;
+            }
+        }
+
+        // Get Cache Statistics
+        async function getCacheStats() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/cache-stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('cacheManagementResult');
+                if (result.success) {
+                    const stats = result.data;
+                    const prefixList = Object.entries(stats.prefixCounts)
+                        .map(([prefix, count]) => `${prefix}: ${count} keys`)
+                        .join('<br>');
+
+                    resultDiv.innerHTML = `
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 4px;">
+                            <h4 style="margin: 0 0 10px 0; color: #1976d2;">📊 Cache Statistics</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px;">
+                                <div>
+                                    <strong>General Stats:</strong><br>
+                                    Total Keys: ${stats.totalKeys}<br>
+                                    Used Memory: ${stats.usedMemory}<br>
+                                    Peak Memory: ${stats.usedMemoryPeak}<br>
+                                    Fragmentation: ${stats.memoryFragmentation}
+                                </div>
+                                <div>
+                                    <strong>Performance:</strong><br>
+                                    Cache Hit Rate: ${stats.hitRate}<br>
+                                    Keyspace Hits: ${stats.keyspaceHits}<br>
+                                    Keyspace Misses: ${stats.keyspaceMisses}
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <strong>Keys by Prefix:</strong><br>
+                                <div style="font-size: 11px; margin-top: 5px; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 3px;">
+                                    ${prefixList}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheManagementResult').innerHTML = `<div style="color: red;">Error getting cache stats: ${error.message}</div>`;
+            }
+        }
+
+        // Delete Specific Key
+        async function deleteSpecificKey() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            const key = document.getElementById('specificKey').value;
+            if (!key) {
+                showRedisStatus('Please enter a key to delete', 'error');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete key: ${key}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/delete`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ key })
+                });
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('cacheManagementResult');
+                if (result.success) {
+                    resultDiv.innerHTML = `<div style="color: #28a745;">✅ Key deleted: ${key}</div>`;
+                    document.getElementById('specificKey').value = '';
+                    viewCacheKeys();
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheManagementResult').innerHTML = `<div style="color: red;">Error deleting key: ${error.message}</div>`;
+            }
+        }
+
+        // Flush All Cache
+        async function flushAllCache() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            if (!confirm('⚠️ WARNING: This will delete ALL Redis data! Are you absolutely sure?')) {
+                return;
+            }
+
+            if (!confirm('This action cannot be undone. Type YES to confirm you want to flush all Redis data.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/flush-all`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('cacheManagementResult');
+                if (result.success) {
+                    resultDiv.innerHTML = `<div style="color: #28a745;">✅ All Redis data has been flushed</div>`;
+                    // Clear cache view
+                    document.getElementById('cacheKeys').innerHTML = '<div style="color: #666;">Cache is now empty</div>';
+                } else {
+                    resultDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('cacheManagementResult').innerHTML = `<div style="color: red;">Error flushing cache: ${error.message}</div>`;
+            }
+        }
+
+        // Enhanced Get Redis Logs with filtering
+        async function getRedisLogs() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                // Get filter values
+                const level = document.getElementById('logLevel')?.value || '';
+                const operation = document.getElementById('logOperation')?.value || '';
+                const limit = document.getElementById('logLimit')?.value || '100';
+                
+                // Build query parameters
+                const params = new URLSearchParams();
+                params.append('limit', limit);
+                if (level) params.append('level', level);
+                if (operation) params.append('operation', operation);
+                
+                const response = await fetch(`${API_BASE}/redis/logs?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const logsDiv = document.getElementById('redisLogs');
+                const statsDiv = document.getElementById('logStats');
+                
+                if (result.success) {
+                    const logs = result.data;
+                    const meta = result.meta || {};
+                    
+                    // Show statistics
+                    if (statsDiv) {
+                        statsDiv.style.display = 'block';
+                        statsDiv.innerHTML = `
+                            <strong>📊 Log Statistics:</strong> 
+                            ${meta.count || logs.length} logs displayed 
+                            ${meta.filters?.level ? `| Level: ${meta.filters.level}` : ''} 
+                            ${meta.filters?.operation ? `| Operation: ${meta.filters.operation}` : ''}
+                            | Limit: ${meta.limit || limit}
+                        `;
+                    }
+                    
+                    if (logs.length === 0) {
+                        logsDiv.innerHTML = '<div style="color: #666; text-align: center; padding: 25px; font-size: 14px;">No Redis logs found matching the filters</div>';
+                    } else {
+                        // Enhanced log display with colors and formatting
+                        logsDiv.innerHTML = logs.map(log => {
+                            const timestamp = new Date(log.timestamp).toLocaleString();
+                            const levelColor = getLevelColor(log.level);
+                            const levelClass = `level-${log.level.toLowerCase()}`;
+                            const operationBadge = log.operation ? `<span style="background: #2196F3; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: 500;">${log.operation}</span>` : '';
+                            
+                            let message = log.message;
+                            if (log.key) {
+                                message = message.replace(log.key, `<span class="key-highlight" style="color: #ffeb3b; font-weight: bold; background: rgba(255, 235, 59, 0.2); padding: 2px 4px; border-radius: 3px;">${log.key}</span>`);
+                            }
+                            
+                            return `
+                                <div class="log-entry" style="margin-bottom: 12px; padding: 10px 12px; border-left: 4px solid ${levelColor}; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <span style="color: #888; font-size: 12px; font-weight: 500;">[${timestamp}]</span>
+                                        <div style="display: flex; align-items: center;">
+                                            <span class="${levelClass}" style="color: ${levelColor}; font-weight: bold; font-size: 12px;">${log.level}</span>
+                                            ${operationBadge}
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 6px; color: #58a6ff; font-size: 14px; line-height: 1.5;">${message}</div>
+                                    ${log.metadata ? `<div style="color: #666; font-size: 11px; margin-top: 4px; font-style: italic;">Metadata: ${JSON.stringify(log.metadata)}</div>` : ''}
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        // Auto scroll to bottom
+                        logsDiv.scrollTop = logsDiv.scrollHeight;
+                    }
+                } else {
+                    logsDiv.innerHTML = `<div style="color: #ff6b6b; text-align: center; padding: 20px;">❌ Error: ${result.message}</div>`;
+                    if (statsDiv) statsDiv.style.display = 'none';
+                }
+            } catch (error) {
+                document.getElementById('redisLogs').innerHTML = `<div style="color: #ff6b6b; text-align: center; padding: 20px;">❌ Error getting Redis logs: ${error.message}</div>`;
+                const statsDiv = document.getElementById('logStats');
+                if (statsDiv) statsDiv.style.display = 'none';
+            }
+        }
+
+        // Helper function to get color for log levels
+        function getLevelColor(level) {
+            switch (level) {
+                case 'ERROR': return '#ff6b6b';
+                case 'WARN': return '#ffa726';
+                case 'INFO': return '#66bb6a';
+                case 'DEBUG': return '#42a5f5';
+                default: return '#58a6ff';
+            }
+        }
+
+        // Export Redis Logs
+        async function exportRedisLogs() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/logs?limit=10000`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = JSON.stringify(result.data, null, 2);
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `redis-logs-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    showRedisStatus('Redis logs exported successfully');
+                } else {
+                    showRedisStatus(result.message, 'error');
+                }
+            } catch (error) {
+                showRedisStatus(`Error exporting Redis logs: ${error.message}`, 'error');
+            }
+        }
+
+        // Clear Redis Logs
+        async function clearRedisLogs() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to clear all Redis logs?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/logs/clear`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('redisLogs').innerHTML = '<div style="color: #666;">Redis logs cleared</div>';
+                    showRedisStatus('Redis logs cleared successfully');
+                } else {
+                    showRedisStatus(result.message, 'error');
+                }
+            } catch (error) {
+                showRedisStatus(`Error clearing Redis logs: ${error.message}`, 'error');
+            }
+        }
+
+        // Toggle Redis Monitoring
+        function toggleRedisMonitoring() {
+            const btn = document.getElementById('monitorBtn');
+            
+            if (redisMonitoringInterval) {
+                // Stop monitoring
+                clearInterval(redisMonitoringInterval);
+                redisMonitoringInterval = null;
+                btn.textContent = '▶️ Start Monitoring';
+                btn.className = 'btn-info';
+            } else {
+                // Start monitoring
+                redisMonitoringInterval = setInterval(() => {
+                    getRedisLogs();
+                }, 2000);
+                btn.textContent = '⏸️ Stop Monitoring';
+                btn.className = 'btn-warning';
+                getRedisLogs(); // Initial load
+            }
+        }
+
+        // Enhanced Toggle Auto Refresh
+        function toggleRedisAutoRefresh() {
+            const btn = document.getElementById('redisAutoRefreshBtn');
+            
+            if (redisAutoRefreshInterval) {
+                // Stop auto refresh
+                clearInterval(redisAutoRefreshInterval);
+                redisAutoRefreshInterval = null;
+                if (btn) btn.textContent = '🔄 Auto Refresh (OFF)';
+                showRedisStatus('Auto-refresh stopped', 'info');
+            } else {
+                // Start auto refresh
+                redisAutoRefreshInterval = setInterval(() => {
+                    getRedisLogs();
+                }, 3000); // Refresh every 3 seconds for real-time feel
+                if (btn) btn.textContent = '⏸️ Auto Refresh (ON)';
+                showRedisStatus('Auto-refresh started (3s intervals)', 'success');
+            }
+        }
+
+        // Add filter change listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add change listeners to filter dropdowns
+            const logLevel = document.getElementById('logLevel');
+            const logOperation = document.getElementById('logOperation');
+            const logLimit = document.getElementById('logLimit');
+            
+            if (logLevel) {
+                logLevel.addEventListener('change', () => {
+                    if (document.getElementById('redisLogs').innerHTML.trim() && 
+                        !document.getElementById('redisLogs').innerHTML.includes('Click "Refresh Logs"')) {
+                        getRedisLogs(); // Auto-refresh when filters change
+                    }
+                });
+            }
+            
+            if (logOperation) {
+                logOperation.addEventListener('change', () => {
+                    if (document.getElementById('redisLogs').innerHTML.trim() && 
+                        !document.getElementById('redisLogs').innerHTML.includes('Click "Refresh Logs"')) {
+                        getRedisLogs(); // Auto-refresh when filters change
+                    }
+                });
+            }
+            
+            if (logLimit) {
+                logLimit.addEventListener('change', () => {
+                    if (document.getElementById('redisLogs').innerHTML.trim() && 
+                        !document.getElementById('redisLogs').innerHTML.includes('Click "Refresh Logs"')) {
+                        getRedisLogs(); // Auto-refresh when filters change
+                    }
+                });
+            }
+        });
+
+        // Get Redis Configuration
+        async function getRedisConfig() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/config`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const configDiv = document.getElementById('redisConfig');
+                if (result.success) {
+                    const config = result.data;
+                    
+                    // Group important configuration settings
+                    const importantSettings = {
+                        'maxmemory': config.maxmemory || 'Not set',
+                        'maxmemory-policy': config['maxmemory-policy'] || 'noeviction',
+                        'timeout': config.timeout || '0',
+                        'tcp-keepalive': config['tcp-keepalive'] || '300',
+                        'databases': config.databases || '16',
+                        'save': config.save || 'Not configured',
+                        'appendonly': config.appendonly || 'no',
+                        'appendfsync': config.appendfsync || 'everysec'
+                    };
+
+                    const securitySettings = {
+                        'protected-mode': config['protected-mode'] || 'yes',
+                        'requirepass': config.requirepass ? '***SET***' : 'Not set',
+                        'bind': config.bind || '127.0.0.1',
+                        'port': config.port || '6379'
+                    };
+
+                    configDiv.innerHTML = `
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                <div>
+                                    <h4 style="color: #1976d2; margin: 0 0 10px 0;">🔧 Core Settings</h4>
+                                    ${Object.entries(importantSettings).map(([key, value]) => 
+                                        `<div style="margin-bottom: 5px; padding: 5px; background: #f8f9fa; border-radius: 3px;">
+                                            <strong style="color: #2e7d32;">${key}:</strong> 
+                                            <span style="color: #424242;">${value}</span>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                                
+                                <div>
+                                    <h4 style="color: #1976d2; margin: 0 0 10px 0;">🔒 Security Settings</h4>
+                                    ${Object.entries(securitySettings).map(([key, value]) => 
+                                        `<div style="margin-bottom: 5px; padding: 5px; background: #f8f9fa; border-radius: 3px;">
+                                            <strong style="color: #d32f2f;">${key}:</strong> 
+                                            <span style="color: #424242;">${value}</span>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                            
+                            <details style="margin-top: 15px;">
+                                <summary style="cursor: pointer; font-weight: bold; color: #1976d2; padding: 5px;">🔍 View All Configuration (${Object.keys(config).length} settings)</summary>
+                                <div style="max-height: 200px; overflow-y: auto; background: #f5f5f5; padding: 10px; margin-top: 10px; border-radius: 4px;">
+                                    ${Object.entries(config).sort().map(([key, value]) => 
+                                        `<div style="margin: 2px 0; font-size: 11px;">
+                                            <span style="color: #666; display: inline-block; min-width: 200px;">${key}:</span> 
+                                            <span style="color: #333;">${value}</span>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    configDiv.innerHTML = `<div style="color: red;">❌ Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('redisConfig').innerHTML = `<div style="color: red;">❌ Error getting Redis config: ${error.message}</div>`;
+            }
+        }
+
+        // Get Redis Active Clients
+        async function getRedisClients() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/clients`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const configDiv = document.getElementById('redisConfig');
+                if (result.success) {
+                    const clients = result.data;
+                    
+                    if (clients.length === 0) {
+                        configDiv.innerHTML = `
+                            <div style="text-align: center; padding: 20px; color: #666;">
+                                👥 No active Redis clients found
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    configDiv.innerHTML = `
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <div style="margin-bottom: 15px; padding: 10px; background: #e3f2fd; border-radius: 4px;">
+                                <strong>👥 Active Redis Clients: ${clients.length}</strong>
+                            </div>
+                            
+                            <div style="display: grid; gap: 10px;">
+                                ${clients.map((client, index) => {
+                                    const age = parseInt(client.age) || 0;
+                                    const idle = parseInt(client.idle) || 0;
+                                    const ageFormatted = age > 60 ? `${Math.floor(age/60)}m ${age%60}s` : `${age}s`;
+                                    const idleFormatted = idle > 60 ? `${Math.floor(idle/60)}m ${idle%60}s` : `${idle}s`;
+                                    
+                                    return `
+                                        <div style="border: 1px solid #ddd; border-radius: 4px; padding: 12px; background: white;">
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 12px;">
+                                                <div>
+                                                    <strong>Client ${index + 1}</strong><br>
+                                                    <span style="color: #666;">ID:</span> ${client.id || 'N/A'}<br>
+                                                    <span style="color: #666;">Address:</span> ${client.addr || 'N/A'}<br>
+                                                    <span style="color: #666;">Name:</span> ${client.name || 'Unnamed'}
+                                                </div>
+                                                <div>
+                                                    <span style="color: #666;">Age:</span> ${ageFormatted}<br>
+                                                    <span style="color: #666;">Idle:</span> ${idleFormatted}<br>
+                                                    <span style="color: #666;">DB:</span> ${client.db || '0'}<br>
+                                                    <span style="color: #666;">Flags:</span> ${client.flags || 'N/A'}
+                                                </div>
+                                                <div>
+                                                    <span style="color: #666;">Commands:</span> ${client.cmd || 'N/A'}<br>
+                                                    <span style="color: #666;">Multi:</span> ${client.multi || '0'}<br>
+                                                    <span style="color: #666;">Psub:</span> ${client.psub || '0'}<br>
+                                                    <span style="color: #666;">Sub:</span> ${client.sub || '0'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    configDiv.innerHTML = `<div style="color: red;">❌ Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('redisConfig').innerHTML = `<div style="color: red;">❌ Error getting Redis clients: ${error.message}</div>`;
+            }
+        }
+
+        // Get Memory Usage
+        async function getMemoryUsage() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/memory`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const memoryDiv = document.getElementById('memoryUsage');
+                if (result.success) {
+                    const memory = result.data;
+                    memoryDiv.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div style="background: #e8f5e8; padding: 15px; border-radius: 4px; text-align: center;">
+                                <div style="font-size: 18px; font-weight: bold; color: #388e3c;">${memory.used_memory_human}</div>
+                                <div style="font-size: 12px; color: #666;">Used Memory</div>
+                            </div>
+                            <div style="background: #e3f2fd; padding: 15px; border-radius: 4px; text-align: center;">
+                                <div style="font-size: 18px; font-weight: bold; color: #1976d2;">${memory.used_memory_peak_human}</div>
+                                <div style="font-size: 12px; color: #666;">Peak Memory</div>
+                            </div>
+                            <div style="background: #fff3e0; padding: 15px; border-radius: 4px; text-align: center;">
+                                <div style="font-size: 18px; font-weight: bold; color: #f57c00;">${memory.mem_fragmentation_ratio}</div>
+                                <div style="font-size: 12px; color: #666;">Fragmentation Ratio</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 12px;">
+                            <strong>Memory Policy:</strong> ${memory.maxmemory_policy || 'None'}<br>
+                            <strong>Max Memory:</strong> ${memory.maxmemory_human || 'Not set'}<br>
+                            <strong>RSS Memory:</strong> ${memory.used_memory_rss_human}
+                        </div>
+                    `;
+                } else {
+                    memoryDiv.innerHTML = `<div style="color: red;">Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('memoryUsage').innerHTML = `<div style="color: red;">Error getting memory usage: ${error.message}</div>`;
+            }
+        }
+
+        // Get Keyspace Info
+        async function getKeyspaceInfo() {
+            if (!ADMIN_TOKEN) {
+                showRedisStatus('Please save an admin token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/redis/keyspace`, {
+                    headers: {
+                        'Authorization': `Bearer ${ADMIN_TOKEN}`
+                    }
+                });
+                const result = await response.json();
+                
+                const memoryDiv = document.getElementById('memoryUsage');
+                if (result.success) {
+                    const keyspace = result.data;
+                    memoryDiv.innerHTML = `
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 4px;">
+                            <h4 style="margin: 0 0 10px 0;">Database Keyspace Information</h4>
+                            ${Object.keys(keyspace).length === 0 ? 
+                                '<div style="color: #666;">No keyspace data available</div>' :
+                                Object.entries(keyspace).map(([db, info]) => 
+                                    `<div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 4px;">
+                                        <strong>Database ${db}:</strong><br>
+                                        Keys: ${info.keys}, Expires: ${info.expires}, Avg TTL: ${info.avg_ttl}
+                                    </div>`
+                                ).join('')
+                            }
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `<div style="color: red;">❌ Error: ${result.message}</div>`;
+                }
+            } catch (error) {
+                const statusDiv = document.getElementById('redisStatus');
+                let errorMessage = error.message;
+                
+                if (error.message.includes('Unexpected token')) {
+                    errorMessage = 'Authentication failed or Redis service unavailable';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Cannot connect to Redis service';
+                }
+                
+                statusDiv.innerHTML = `<div style="color: red;">❌ Error getting Redis info: ${errorMessage}</div>`;
+            }
+        }
+
+        // Show Redis Status Message
+        function showRedisStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('redisStatusMessages');
+            const alertClass = type === 'error' ? 'alert-danger' : type === 'info' ? 'alert-info' : 'alert-success';
+            const icon = type === 'error' ? '❌' : type === 'info' ? 'ℹ️' : '✅';
+            
+            statusDiv.innerHTML = `
+                <div class="alert ${alertClass}" style="padding: 15px; margin: 10px 0; border-radius: 4px; background: ${type === 'error' ? '#f8d7da' : type === 'info' ? '#d1ecf1' : '#d4edda'}; border: 1px solid ${type === 'error' ? '#f5c6cb' : type === 'info' ? '#bee5eb' : '#c3e6cb'}; color: ${type === 'error' ? '#721c24' : type === 'info' ? '#0c5460' : '#155724'};">
+                    ${icon} ${message}
+                </div>
+            `;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // Theme Toggle Functions
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (themeToggle.checked) {
+                body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+            }
+            
+            // Update any open modals
+            const modal = document.getElementById('logModal');
+            const modalContent = document.getElementById('modalContent');
+            if (modal && modalContent) {
+                if (body.classList.contains('dark-mode')) {
+                    modal.classList.add('dark-mode');
+                    modalContent.classList.add('dark-mode');
+                } else {
+                    modal.classList.remove('dark-mode');
+                    modalContent.classList.remove('dark-mode');
+                }
+            }
+        }
+
+        // Load saved theme on page load
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = true;
+            } else {
+                document.body.classList.remove('dark-mode');
+                themeToggle.checked = false;
+            }
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+        });
     </script>
 </body>
 </html>

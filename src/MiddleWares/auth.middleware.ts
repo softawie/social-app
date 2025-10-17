@@ -6,6 +6,7 @@ import { IUser } from "@db/models/user.model";
 import { TokenType, UserRoles } from "@utils/enums";
 import TokenModel from "@db/models/token.model";
 import { AppException, NotFoundException } from "@utils/globalError.handler";
+import { redisService } from "@utils/redis.service";
 
 interface AuthenticatedRequest extends Request {
   user?: (Document<unknown, {}, IUser> & IUser & { _id: unknown }) | undefined;
@@ -55,6 +56,15 @@ export const authenticationMiddleware = async (
     }
   }
 
+  // Check Redis blacklist first (faster than MongoDB)
+  if (decoded.jti) {
+    const isBlacklisted = await redisService.exists(`blacklist:${decoded.jti}`);
+    if (isBlacklisted) {
+      throw new AppException("Token is revoked", 401);
+    }
+  }
+  
+  // Fallback to MongoDB check for older tokens
   const tokenDoc = await TokenModel.findOne({ jti: decoded.jti });
   if(decoded.jti && tokenDoc){
     throw new AppException("Token is revoked", 401);

@@ -5,15 +5,18 @@ import { authenticationMiddleware, authorizationMiddleware } from "@src/MiddleWa
 import { UserRoles } from "@utils/enums";
 import fs from "node:fs";
 import path from "node:path";
+import { quickCache } from "@src/MiddleWares/universal-cache.middleware";
+import { bypassRateLimit } from "@src/MiddleWares/redis-rate-limit.middleware";
 
 const logsRouter = Router();
 
 // Enforce admin-only access for all logs APIs
 logsRouter.use(authenticationMiddleware);
 logsRouter.use(authorizationMiddleware({ accessRoles: [UserRoles.ADMIN] }));
+logsRouter.use(bypassRateLimit); // Bypass rate limiting for admin log operations
 
-// GET /logs/stats - Get log statistics (must come before /logs/:id)
-logsRouter.get("/logs/stats", async (req: Request, res: Response) => {
+// GET /logs/stats - Get log statistics (must come before /logs/:id) - with short caching
+logsRouter.get("/logs/stats", quickCache.realtime(), async (req: Request, res: Response) => {
   try {
     const { logs } = await structuredLogger.getLogs();
     
@@ -68,8 +71,8 @@ logsRouter.get("/logs/stats", async (req: Request, res: Response) => {
   }
 });
 
-// GET /logs - Retrieve logs with pagination and filtering
-logsRouter.get("/logs", async (req: Request, res: Response) => {
+// GET /logs - Retrieve logs with pagination and filtering - with short caching
+logsRouter.get("/logs", quickCache.realtime(), async (req: Request, res: Response) => {
   try {
     const {
       limit = "50",
@@ -129,8 +132,8 @@ logsRouter.get("/logs", async (req: Request, res: Response) => {
   }
 });
 
-// GET /logs/:id - Get a specific log by ID
-logsRouter.get("/logs/:id", async (req: Request, res: Response) => {
+// GET /logs/:id - Get a specific log by ID - with caching
+logsRouter.get("/logs/:id", quickCache.dynamic(), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const logId = parseInt(id);
@@ -189,8 +192,8 @@ logsRouter.get("/logs/export", async (req: Request, res: Response) => {
   }
 });
 
-// GET /logs/route/:routeName - Get logs for specific route
-logsRouter.get("/logs/route/:routeName", (req: Request, res: Response) => {
+// GET /logs/route/:routeName - Get logs for specific route - with caching
+logsRouter.get("/logs/route/:routeName", quickCache.realtime(), (req: Request, res: Response) => {
   try {
     const { routeName } = req.params;
     const { limit = "50", offset = "0" } = req.query;
@@ -239,8 +242,8 @@ logsRouter.get("/logs/route/:routeName", (req: Request, res: Response) => {
   }
 });
 
-// GET /logs/routes - Get list of available route logs
-logsRouter.get("/logs/routes", (req: Request, res: Response) => {
+// GET /logs/routes - Get list of available route logs - with caching
+logsRouter.get("/logs/routes", quickCache.static(), (req: Request, res: Response) => {
   try {
     const availableRoutes = getAvailableRoutes();
     
