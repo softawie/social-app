@@ -31,6 +31,8 @@ import {
 } from "@utils/verification-token.utils";
 import { VerificationTokenType } from "@db/models/verification-token.model";
 import { verificationSuccessPage, verificationErrorPage } from "@utils/html/verification-views";
+import { SessionService } from "@utils/session.service";
+import { redisService } from "@utils/redis.service";
 
 const signup = async (
   req: Request,
@@ -121,6 +123,7 @@ const login = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const startTime = Date.now();
   const { password, email }: ILoginDTO = req.body;
 
   // Decrypt password if client sent AES cipher text
@@ -136,14 +139,43 @@ const login = async (
     plainPassword = password;
   }
 
-  // Check if user exists
-  const user = await UserModel.findOne({ email });
+  // Try to get user from cache first for performance optimization
+  const cacheKey = `user_credentials:${email}`;
+  let user = await redisService.get(cacheKey);
+  let cacheHit = false;
+  
+  if (user) {
+    cacheHit = true;
+    logger.log(`Cache HIT for user: ${email}`);
+  } else {
+    // If not in cache, query database with projection for better performance
+    logger.log(`Cache MISS for user: ${email} - querying database`);
+    user = await UserModel.findOne(
+      { email }, 
+      'email password role firstName lastName confirmEmail _id'
+    );
+    
+    if (user) {
+      // Cache user credentials for 15 minutes to speed up subsequent logins
+      await redisService.set(cacheKey, {
+        _id: user._id,
+        email: user.email,
+        password: user.password,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        confirmEmail: user.confirmEmail
+      }, { ttl: 900 }); // 15 minutes cache
+    }
+  }
+
   if (!user) {
     throw new NotFoundException("User not found");
   }
   if (!user.confirmEmail) {
     throw new AppException("User not found or Email not confirmed", 401);
   }
+  
   const isMatched = await compare({
     plainText: plainPassword,
     hash: user.password,
@@ -151,13 +183,46 @@ const login = async (
   if (!isMatched) {
     throw new AppException("Invalid credentials", 401);
   }
+  
   const name = `${user.firstName} ${user.lastName}`;
 
+  // Create Redis session with optimized pipeline operations
+  const sessionId = await SessionService.createSession(
+    (user._id as string).toString(),
+    {
+      email: user.email,
+      role: user.role,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      deviceInfo: SessionService.parseUserAgent(req.get('User-Agent') || '')
+    }
+  );
+
   const { accessToken, refreshToken } = generateToken({ user: user as IUser });
+  
+  // Cache user data for quick access using pipeline for better performance
+  const pipeline = redisService.redis.pipeline();
+  pipeline.setex(
+    `user:${user._id}`, 
+    24 * 60 * 60, // 24 hours
+    JSON.stringify({ 
+      id: user._id, 
+      email: user.email, 
+      role: user.role, 
+      name,
+      sessionId 
+    })
+  );
+  await pipeline.exec();
+
+  const totalTime = Date.now() - startTime;
+  const cacheStatus = cacheHit ? 'HIT' : 'MISS';
+  logger.log(`Login completed in ${totalTime}ms for user: ${email} (Cache: ${cacheStatus})`);
+
   SucRes({
     res,
     message: "User logged in successfully",
-    data: { accessToken, refreshToken, name },
+    data: { accessToken, refreshToken, name, sessionId },
   });
 };
 
@@ -170,17 +235,38 @@ const logout = async (
   if (!user || !decoded) {
     throw new AppException("Unauthorized", 401);
   }
+  
+  // Get session ID from request headers or body
+  const sessionId = req.headers['x-session-id'] as string || req.body.sessionId;
+  
+  // Use pipeline for efficient cache cleanup
+  const pipeline = redisService.redis.pipeline();
+  
+  // Destroy Redis session if provided
+  if (sessionId) {
+    await SessionService.destroySession(sessionId);
+  }
+  
+  // Clear user cache and credential cache
+  pipeline.del(`user:${user._id}`);
+  pipeline.del(`user_credentials:${user.email}`);
+  
   // JWT `exp` is in seconds since epoch. Convert to ms and compute remaining time.
   const expSeconds = decoded.exp as number | undefined;
   const expiresIn = expSeconds
     ? Math.max(0, expSeconds * 1000 - Date.now())
     : 0;
 
-  await TokenModel.create({
-    userId: user._id,
-    jti: decoded.jti,
-    expiresIn,
-  });
+  // Blacklist token in Redis for better performance
+  pipeline.setex(
+    `blacklist:${decoded.jti}`,
+    Math.ceil(expiresIn / 1000),
+    JSON.stringify({ userId: user._id, logoutTime: new Date() })
+  );
+
+  // Execute all cleanup operations
+  await pipeline.exec();
+
   SucRes({
     res,
     statusCode: 201,

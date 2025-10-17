@@ -8,15 +8,22 @@ import { endPoints } from "./user.authorization";
 import { fileValidation, localFileUpload, secureFileUpload } from "@utils/multer/local.util";
 import { validate } from "@src/MiddleWares/validation.middleware";
 import { deleteAccountValidation, freezeAccountValidation, signUpValidation, unfreezeAccountValidation, updatePasswordValidation } from "@modules/auth/auth.validation";
+import { quickCache, invalidateCache } from "@src/MiddleWares/universal-cache.middleware";
 const userRouter = Router();
 
-userRouter.get("/getUsers", getUsers);
+// Public routes with caching
+userRouter.get("/getUsers", quickCache.public(), getUsers);
+
+// Protected routes with caching
 userRouter.get(
   "/getSingleUser",
   authenticationMiddleware,
   authorizationMiddleware({ accessRoles: endPoints.getSingleUser }),
+  quickCache.userSpecific(),
   getSingleUser
 );
+
+// Profile update routes with cache invalidation
 userRouter.patch(
   "/update-profile-image",
   authenticationMiddleware,
@@ -28,6 +35,10 @@ userRouter.patch(
       maxSize: fileValidation.maxSize
     }
   }).single("profileImage"),
+  invalidateCache((req) => [
+    `api:*user:${req.user?.id}*`,
+    'api:*users*'
+  ]),
   updateProfileImage
 );
 
@@ -42,6 +53,10 @@ userRouter.patch(
       maxSize: fileValidation.maxSize
     }
   }).array("coverImages",5),
+  invalidateCache((req) => [
+    `api:*user:${req.user?.id}*`,
+    'api:*users*'
+  ]),
   coverImages
 );
 
@@ -50,14 +65,22 @@ userRouter.patch(
   validate(updatePasswordValidation),
   authenticationMiddleware,
   authorizationMiddleware({ accessRoles: endPoints.updatePassword }),
+  invalidateCache((req) => [
+    `api:*user:${req.user?.id}*`
+  ]),
   updatePassword
 );
 
+// Account management routes with cache invalidation
 userRouter.delete(
   "/freeze-account{/:userId}",
   validate(freezeAccountValidation),
   authenticationMiddleware,
   authorizationMiddleware({ accessRoles: endPoints.freezeAccount }),
+  invalidateCache((req) => [
+    `api:*user:${req.params.userId || req.user?.id}*`,
+    'api:*users*'
+  ]),
   freezeAccount
 );
 
@@ -66,6 +89,10 @@ userRouter.patch(
   validate(unfreezeAccountValidation),
   authenticationMiddleware,
   authorizationMiddleware({ accessRoles: endPoints.unfreezeAccount }),
+  invalidateCache((req) => [
+    `api:*user:${req.params.userId}*`,
+    'api:*users*'
+  ]),
   unfreezeAccount
 );
 
@@ -74,6 +101,13 @@ userRouter.delete(
   validate(deleteAccountValidation),
   authenticationMiddleware,
   authorizationMiddleware({ accessRoles: endPoints.deleteAccount }),
+  invalidateCache((req) => [
+    `api:*user:${req.params.userId}*`,
+    'api:*users*',
+    'api:*posts*',
+    'api:*comments*',
+    'api:*friend*'
+  ]),
   deleteAccount
 );
 
