@@ -2,11 +2,20 @@ import express, { Express} from "express";
 import { CheckDB } from "@db/connectionDB";
 import userRouter from "@modules/users/user.controller";
 import authRouter from "@modules/auth/auth.controller";
+import logsRouter from "@modules/logs/logs.controller";
+import backupRouter from "@modules/backup/backup.routes";
+import postRouter from "@modules/post/post.routes";
+import commentRouter from "@modules/comment/comment.routes";
+import friendRequestRouter from "@modules/friend-request/friend-request.routes";
 import { globalErrorHandler, NotFoundException } from "@utils/globalError.handler";
 import * as cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { getRouteLogger } from "@utils/logger/logger";
+import { structuredLoggerMiddleware } from "@utils/logger/structured-logger";
+import { startSuccessLogsCleanupJob } from "@src/jobs/logs.cleanup.job";
+import { BackupCleanupJob } from "@src/jobs/backup.cleanup.job";
+import { AutoBackupJob } from "@src/jobs/auto.backup.job";
 
 const limitRequest = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -16,11 +25,46 @@ const limitRequest = rateLimit({
 
 const bootstrap = async (app: Express) => {
   app.use(cors.default(),express.json(),helmet(),limitRequest)
+  
+  // Add structured logging middleware for all routes
+  app.use(structuredLoggerMiddleware);
+  
   await CheckDB();
+  // Start daily cleanup job (deletes success logs at 21:00 local time)
+  startSuccessLogsCleanupJob();
+  // Start weekly backup cleanup job (deletes old backups every Sunday at 2:00 AM)
+  BackupCleanupJob.startWeeklyBackupCleanup();
+  // Start daily auto-backup job (creates backups every day at 11:00 PM)
+  AutoBackupJob.startDailyAutoBackup();
   app.use("/uploads", express.static("./src/uploads"));
+  
+  // Use getRouteLogger for auth routes (this will mount the authRouter with logging)
+  // Mount auth routes before user routes to avoid conflicts
+  
   app.use("/", userRouter);
-  getRouteLogger(app,"/login",authRouter,"login.log");
-  app.use("/", authRouter);
+  getRouteLogger(app,"/auth",authRouter,"login.log");
+
+  app.use("/api", logsRouter);
+  app.use("/api/backup", backupRouter);
+  app.use("/api/posts", postRouter);
+  app.use("/api/comments", commentRouter);
+  app.use("/api/friend-requests", friendRequestRouter);
+  
+  // Public app config for static tools (e.g., logs viewer)
+  app.get("/app-config", (req, res) => {
+    const port = parseInt(process.env.PORT || '3000');
+    const baseUrl = process.env.APP_URL || `http://localhost:${port}`;
+    res.json({
+      baseUrl,
+      apiBase: `${baseUrl}/api`,
+    });
+  });
+
+  // Serve the logs viewer page
+  app.get("/logs-viewer", (req, res) => {
+    const filePath = require('node:path').resolve('logs-viewer.html');
+    return res.sendFile(filePath);
+  });
   
   // not found route
   app.all("/*dummy", (req, res, next) => {

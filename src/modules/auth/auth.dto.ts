@@ -1,4 +1,4 @@
-import { providersEnum } from "@utils/enums";
+import { providersEnum, UserRoles, VerificationMethod } from "@utils/enums";
 
 export interface User {
   email: string | undefined;
@@ -17,7 +17,8 @@ export interface ISignupDTO {
   email: string;
   age: number;
   phone: string;
-  role: string;
+  role: UserRoles|undefined;
+  verificationMethod?: VerificationMethod; // Optional, defaults to OTP
 }
 
 export interface ILoginDTO {
@@ -27,13 +28,25 @@ export interface ILoginDTO {
 
 export interface IConfirmEmailDTO {
   email: string;
-  otp: string;
+  otp?: string; // Optional for OTP method
+  token?: string; // Optional for token method
 }
 
 export interface IResetPasswordDTO {
-  userId: string;
-  code: string;
+  userId?: string; // Optional for token method
+  code?: string; // Optional for OTP method
+  token?: string; // Optional for token method
   password: string;
   email: string;
+}
+
+export interface IForgetPasswordDTO {
+  email: string;
+  verificationMethod?: VerificationMethod; // Optional, defaults to OTP
+}
+
+export interface IVerifyTokenDTO {
+  email: string;
+  token: string;
 }
   

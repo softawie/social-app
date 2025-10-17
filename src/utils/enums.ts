@@ -37,4 +37,48 @@ export enum ValidationLocation {
 export enum EmailEventEnums{
   CONFIRM_EMAIL = 'confirmEmail',
   FORGET_PASSWORD = 'forgetPassword',
+  CONFIRM_EMAIL_TOKEN = 'confirmEmailToken',
+  FORGET_PASSWORD_TOKEN = 'forgetPasswordToken',
+}
+
+export enum VerificationMethod {
+  OTP = 'otp',
+  TOKEN = 'token',
+}
+
+// Post-related enums
+export enum PostVisibility {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
+  FRIENDS = 'friends',
+}
+
+export enum PostSortBy {
+  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt',
+  LIKES = 'likes',
+  COMMENTS = 'comments',
+}
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
+
+export enum ReportReason {
+  SPAM = 'spam',
+  HARASSMENT = 'harassment',
+  HATE_SPEECH = 'hate_speech',
+  VIOLENCE = 'violence',
+  NUDITY = 'nudity',
+  FALSE_INFORMATION = 'false_information',
+  COPYRIGHT = 'copyright',
+  OTHER = 'other',
+}
+
+export enum ReportStatus {
+  PENDING = 'pending',
+  REVIEWED = 'reviewed',
+  RESOLVED = 'resolved',
+  DISMISSED = 'dismissed',
 }
