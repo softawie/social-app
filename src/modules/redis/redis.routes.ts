@@ -37,4 +37,9 @@ router.get('/cache-stats', bypassRateLimit, quickCache.realtime(), RedisControll
 router.get('/logs', bypassRateLimit, RedisController.getRedisLogs);
 router.delete('/logs/clear', bypassRateLimit, RedisController.clearRedisLogs);
 
+// Performance testing endpoints
+router.post('/toggle', bypassRateLimit, RedisController.toggleRedis);
+router.get('/status', bypassRateLimit, RedisController.getRedisStatus);
+router.post('/performance-test', bypassRateLimit, RedisController.performanceTest);
+
 export default router;

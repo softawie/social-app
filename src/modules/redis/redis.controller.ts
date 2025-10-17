@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { redisService } from '@utils/redis.service';
 import { RedisConnection } from '@db/redis.connection';
 import { RedisLogger } from '@utils/redis-logger.service';
+import { RedisToggle } from '@utils/redis-toggle.utils';
 
 export class RedisController {
   /**
@@ -586,6 +587,111 @@ export class RedisController {
     } catch (error) {
       console.error('Clear Redis logs error:', error);
       return res.status(500).json({ success: false, message: 'Failed to clear Redis logs' });
+    }
+  }
+
+  /**
+   * Toggle Redis on/off for performance testing
+   */
+  static async toggleRedis(req: Request, res: Response) {
+    try {
+      const { enable } = req.body;
+      
+      if (enable === undefined) {
+        // Just toggle current state
+        const newState = await RedisToggle.toggle();
+        return res.status(200).json({
+          success: true,
+          message: `Redis ${newState ? 'enabled' : 'disabled'} successfully`,
+          data: { enabled: newState }
+        });
+      }
+      
+      // Set specific state
+      if (enable) {
+        await RedisToggle.enable();
+      } else {
+        await RedisToggle.disable();
+      }
+      
+      return res.status(200).json({
+        success: true,
+        message: `Redis ${enable ? 'enabled' : 'disabled'} successfully`,
+        data: { enabled: enable }
+      });
+    } catch (error) {
+      console.error('Toggle Redis error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to toggle Redis' });
+    }
+  }
+
+  /**
+   * Get Redis toggle status
+   */
+  static async getRedisStatus(req: Request, res: Response) {
+    try {
+      const status = RedisToggle.getStatus();
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Redis status retrieved successfully',
+        data: status
+      });
+    } catch (error) {
+      console.error('Get Redis status error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to get Redis status' });
+    }
+  }
+
+  /**
+   * Performance test endpoint - measures operation with and without Redis
+   */
+  static async performanceTest(req: Request, res: Response) {
+    try {
+      const { operation = 'login', iterations = 5 } = req.body;
+      
+      // Define test operations
+      const testOperations: Record<string, () => Promise<any>> = {
+        login: async () => {
+          // Simulate login operation
+          const user = await redisService.get('user_credentials:test@example.com');
+          return user || { simulated: true };
+        },
+        getUsers: async () => {
+          // Simulate get users operation
+          const users = await redisService.get('api:users:list');
+          return users || { simulated: true };
+        },
+        getPosts: async () => {
+          // Simulate get posts operation
+          const posts = await redisService.get('api:posts:list');
+          return posts || { simulated: true };
+        }
+      };
+      
+      const testFn = testOperations[operation];
+      if (!testFn) {
+        return res.status(400).json({
+          success: false,
+          message: `Unknown operation: ${operation}. Available: ${Object.keys(testOperations).join(', ')}`
+        });
+      }
+      
+      // Measure performance
+      const results = await RedisToggle.measurePerformance(testFn, iterations);
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Performance test completed successfully',
+        data: {
+          operation,
+          iterations,
+          results
+        }
+      });
+    } catch (error) {
+      console.error('Performance test error:', error);
+      return res.status(500).json({ success: false, message: 'Failed to run performance test' });
     }
   }
 }
