@@ -1,7 +1,7 @@
 import { CreateOptions, HydratedDocument, Model } from "mongoose";
 
 export class DatabaseRepo<TDocument> {
-  constructor(protected readonly model: Model<TDocument>) {
+  constructor(public readonly model: Model<TDocument>) {
     this.model = model;
   }
   async create({
