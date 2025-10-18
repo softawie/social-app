@@ -104,7 +104,7 @@ export class FriendRequestService {
           total = await this.friendRequestRepo.countFriends(userId);
           
           // Format friends list
-          const friends = friendships.map(friendship => {
+          const friends: FriendResponseDto[] = friendships.map(friendship => {
             const friend = (friendship.senderId as any)._id.toString() === userId ? friendship.receiverId : friendship.senderId;
             return {
               id: (friend as any)._id.toString(),
@@ -112,7 +112,7 @@ export class FriendRequestService {
               lastName: (friend as any).lastName,
               email: (friend as any).email,
               profileImage: (friend as any).profileImage,
-              friendshipDate: friendship.updatedAt,
+              friendshipDate: friendship.updatedAt || new Date(),
             };
           });
 

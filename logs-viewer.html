@@ -101,6 +101,41 @@
             color: #000;
         }
         
+        /* Dark mode for Socket Test tab */
+        body.dark-mode #socketStatus {
+            background-color: #3a3a3a !important;
+            color: #e0e0e0 !important;
+            border: 1px solid #4a4a4a;
+        }
+        
+        body.dark-mode #socketStatus.connected {
+            background-color: #1b5e20 !important;
+            color: #a5d6a7 !important;
+        }
+        
+        body.dark-mode #socketStatus.disconnected {
+            background-color: #b71c1c !important;
+            color: #ef9a9a !important;
+        }
+        
+        body.dark-mode #socket-tab div[style*="background: #f8f9fa"] {
+            background: #3a3a3a !important;
+        }
+        
+        body.dark-mode #socket-tab div[style*="background: #e3f2fd"] {
+            background: #1e3a5f !important;
+        }
+        
+        body.dark-mode #socketLog {
+            background: #2d2d2d !important;
+            border-color: #4a4a4a !important;
+        }
+        
+        body.dark-mode #socketLog div {
+            background-color: #3a3a3a !important;
+            color: #e0e0e0 !important;
+        }
+        
         body.dark-mode .btn-secondary {
             background-color: #78909c;
             border-color: #78909c;
@@ -843,6 +878,7 @@
             <div class="nav-tab active" onclick="switchTab('logs')">📊 Logs Viewer</div>
             <div class="nav-tab" onclick="switchTab('backup')">💾 Backup Manager</div>
             <div class="nav-tab" onclick="switchTab('redis')">🔴 Redis Monitor</div>
+            <div class="nav-tab" onclick="switchTab('socket')">🚀 Socket Test</div>
         </div>
         
         <!-- Logs Tab Content -->
@@ -1249,8 +1285,69 @@
             <!-- Status Messages -->
             <div id="redisStatusMessages" style="margin-top: 20px;"></div>
         </div>
+
+        <!-- Socket Test Tab Content -->
+        <div id="socket-tab" class="tab-content">
+            <h2>🚀 Socket.IO Integration Test</h2>
+            <p>Test your Socket.IO backend integration with your React Native chat app.</p>
+            
+            <div id="socketStatus" class="status disconnected" style="padding: 10px; border-radius: 4px; margin: 10px 0; font-weight: bold;">
+                ❌ Disconnected
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>🔐 Authentication</h3>
+                <input type="text" id="socketToken" placeholder="Enter JWT token (optional for testing)" style="width: 100%; max-width: 500px; padding: 8px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px;">
+                <div class="button-row">
+                    <button onclick="connectSocket()" class="btn-success">🔌 Connect</button>
+                    <button onclick="disconnectSocket()" class="btn-danger">🔌 Disconnect</button>
+                </div>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>💬 Test Messages</h3>
+                <input type="text" id="socketTestMessage" placeholder="Test message" value="Hello from web client!" style="width: 100%; max-width: 500px; padding: 8px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px;">
+                <button onclick="sendSocketTestMessage()" class="btn-primary">📤 Send Test (sayHi)</button>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>📨 Private Message</h3>
+                <input type="text" id="socketPrivateMessage" placeholder="Message content" value="Hello there!" style="width: 100%; max-width: 500px; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" id="socketRecipientId" placeholder="Recipient User ID" style="width: 100%; max-width: 500px; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                <button onclick="sendPrivateSocketMessage()" class="btn-primary">📨 Send Private Message</button>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>👥 Group Message</h3>
+                <input type="text" id="socketGroupMessage" placeholder="Group message content" value="Hello group!" style="width: 100%; max-width: 500px; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" id="socketGroupId" placeholder="Group ID" style="width: 100%; max-width: 500px; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                <button onclick="sendGroupSocketMessage()" class="btn-primary">👥 Send Group Message</button>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>🏠 Room Management</h3>
+                <input type="text" id="socketRoomId" placeholder="Room ID" style="width: 100%; max-width: 500px; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px;">
+                <button onclick="joinSocketRoom()" class="btn-info">🚪 Join Room</button>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h3>📋 Event Log</h3>
+                <button onclick="clearSocketLog()" class="btn-secondary">🗑️ Clear Log</button>
+                <div id="socketLog" style="max-height: 400px; overflow-y: auto; background: white; padding: 15px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 12px; border: 1px solid #ddd;">
+                    <!-- Socket logs will appear here -->
+                </div>
+            </div>
+
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                <h3>📡 Server Info</h3>
+                <p><strong>Server URL:</strong> http://localhost:3000</p>
+                <p><strong>Transport:</strong> WebSocket with polling fallback</p>
+                <p><strong>Authentication:</strong> JWT token in auth header</p>
+            </div>
+        </div>
     </div>
 
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         const API_BASE = 'http://localhost:3000/api';
         let currentOffset = 0;
@@ -2076,6 +2173,16 @@ User Agent: ${log.userAgent}
                 loadBackupHistory();
                 loadAutoBackupStats();
                 loadCleanupStats();
+            }
+            
+            // Initialize socket test when switching to socket tab
+            if (tabName === 'socket') {
+                // Initialize socket log if empty
+                const socketLog = document.getElementById('socketLog');
+                if (!socketLog.innerHTML.trim()) {
+                    logSocket('Socket.IO test page loaded. Click Connect to start testing.');
+                }
+                updateSocketStatus(false, 'Not connected');
             }
         }
 
@@ -3939,6 +4046,179 @@ User Agent: ${log.userAgent}
         document.addEventListener('DOMContentLoaded', function() {
             loadTheme();
         });
+
+        // Socket.IO Test Functions
+        let socketConnection = null;
+
+        function logSocket(message, type = 'info') {
+            const logDiv = document.getElementById('socketLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.cssText = 'margin: 5px 0; padding: 8px; border-left: 3px solid #007bff; background-color: #f8f9fa; border-radius: 3px;';
+            
+            if (type === 'error') {
+                logEntry.style.borderLeftColor = '#dc3545';
+                logEntry.style.backgroundColor = '#f8d7da';
+            } else if (type === 'success') {
+                logEntry.style.borderLeftColor = '#28a745';
+                logEntry.style.backgroundColor = '#d4edda';
+            }
+            
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateSocketStatus(connected, message) {
+            const statusDiv = document.getElementById('socketStatus');
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.style.cssText = 'padding: 10px; border-radius: 4px; margin: 10px 0; font-weight: bold; background-color: #d4edda; color: #155724;';
+                statusDiv.innerHTML = '✅ ' + message;
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.style.cssText = 'padding: 10px; border-radius: 4px; margin: 10px 0; font-weight: bold; background-color: #f8d7da; color: #721c24;';
+                statusDiv.innerHTML = '❌ ' + message;
+            }
+        }
+
+        function connectSocket() {
+            if (socketConnection && socketConnection.connected) {
+                logSocket('Already connected!', 'warning');
+                return;
+            }
+
+            const token = document.getElementById('socketToken').value.trim();
+            const authHeader = token ? `USER ${token}` : '';
+
+            logSocket('Attempting to connect to Socket.IO server...');
+
+            socketConnection = io('http://localhost:3000', {
+                transports: ['websocket', 'polling'],
+                auth: {
+                    authorization: authHeader
+                }
+            });
+
+            // Connection events
+            socketConnection.on('connect', () => {
+                logSocket('✅ Connected to server! Socket ID: ' + socketConnection.id, 'success');
+                updateSocketStatus(true, 'Connected');
+            });
+
+            socketConnection.on('disconnect', (reason) => {
+                logSocket(`❌ Disconnected: ${reason}`, 'error');
+                updateSocketStatus(false, `Disconnected: ${reason}`);
+            });
+
+            socketConnection.on('connect_error', (error) => {
+                logSocket(`❌ Connection error: ${error.message}`, 'error');
+                updateSocketStatus(false, `Connection error: ${error.message}`);
+            });
+
+            socketConnection.on('custom_error', (error) => {
+                logSocket(`⚠️ Custom error: ${error.message}`, 'error');
+            });
+
+            // Message events
+            socketConnection.on('newMessage', (data) => {
+                logSocket(`📨 New message from ${data.createdBy?.username || 'Unknown'}: ${data.content}`, 'success');
+            });
+
+            socketConnection.on('successMessage', (data) => {
+                logSocket(`✅ Message sent successfully: ${data.content}`, 'success');
+            });
+
+            // User events
+            socketConnection.on('userConnected', (data) => {
+                logSocket(`👋 User connected: ${data.username} (${data.userId})`, 'info');
+            });
+
+            socketConnection.on('userDisconnected', (data) => {
+                logSocket(`👋 User disconnected: ${data.username} (${data.userId})`, 'info');
+            });
+        }
+
+        function disconnectSocket() {
+            if (socketConnection) {
+                socketConnection.disconnect();
+                socketConnection = null;
+                logSocket('Disconnected from server');
+                updateSocketStatus(false, 'Disconnected');
+            }
+        }
+
+        function sendSocketTestMessage() {
+            if (!socketConnection || !socketConnection.connected) {
+                logSocket('❌ Not connected to server!', 'error');
+                return;
+            }
+
+            const message = document.getElementById('socketTestMessage').value;
+            logSocket(`Sending test message: ${message}`);
+            
+            socketConnection.emit('sayHi', message, (response) => {
+                logSocket(`📡 Server response: ${JSON.stringify(response)}`, 'success');
+            });
+        }
+
+        function sendPrivateSocketMessage() {
+            if (!socketConnection || !socketConnection.connected) {
+                logSocket('❌ Not connected to server!', 'error');
+                return;
+            }
+
+            const content = document.getElementById('socketPrivateMessage').value;
+            const sendTo = document.getElementById('socketRecipientId').value;
+
+            if (!content || !sendTo) {
+                logSocket('❌ Please enter message content and recipient ID', 'error');
+                return;
+            }
+
+            logSocket(`Sending private message to ${sendTo}: ${content}`);
+            socketConnection.emit('sendMessage', { content, sendTo });
+        }
+
+        function sendGroupSocketMessage() {
+            if (!socketConnection || !socketConnection.connected) {
+                logSocket('❌ Not connected to server!', 'error');
+                return;
+            }
+
+            const content = document.getElementById('socketGroupMessage').value;
+            const groupId = document.getElementById('socketGroupId').value;
+
+            if (!content || !groupId) {
+                logSocket('❌ Please enter message content and group ID', 'error');
+                return;
+            }
+
+            logSocket(`Sending group message to ${groupId}: ${content}`);
+            socketConnection.emit('sendGroupMessage', { content, groupId });
+        }
+
+        function joinSocketRoom() {
+            if (!socketConnection || !socketConnection.connected) {
+                logSocket('❌ Not connected to server!', 'error');
+                return;
+            }
+
+            const roomId = document.getElementById('socketRoomId').value;
+            if (!roomId) {
+                logSocket('❌ Please enter room ID', 'error');
+                return;
+            }
+
+            logSocket(`Joining room: ${roomId}`);
+            socketConnection.emit('join_room', { roomId });
+        }
+
+        function clearSocketLog() {
+            document.getElementById('socketLog').innerHTML = '';
+            logSocket('Socket.IO test log initialized');
+        }
     </script>
 </body>
 </html>

@@ -9,6 +9,7 @@ import postRouter from "@modules/post/post.routes";
 import commentRouter from "@modules/comment/comment.routes";
 import friendRequestRouter from "@modules/friend-request/friend-request.routes";
 import redisRouter from "@modules/redis/redis.routes";
+import socketRouter from "@modules/socket/socket.routes";
 import { globalErrorHandler, NotFoundException } from "@utils/globalError.handler";
 import * as cors from "cors";
 import helmet from "helmet";
@@ -19,10 +20,11 @@ import { startSuccessLogsCleanupJob } from "@src/jobs/logs.cleanup.job";
 import { BackupCleanupJob } from "@src/jobs/backup.cleanup.job";
 import { AutoBackupJob } from "@src/jobs/auto.backup.job";
 import { HealthCheckService } from "@utils/health-check.utils";
+import { SocketGateway } from "@modules/socket";
 
 const limitRequest = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // limit each IP to 100 requests per windowMs
   message: {message:"Too many requests from this IP, please try again after 15 minutes", cause: 429},
 });
 
@@ -33,6 +35,10 @@ const bootstrap = async (app: Express) => {
   app.use(structuredLoggerMiddleware);
   
   await CheckDB();
+  
+  // Initialize Socket.IO Gateway
+  const socketGateway = new SocketGateway(app);
+  console.log('✅ Socket.IO initialized successfully');
   
   // Initialize Redis connection
   try {
@@ -58,6 +64,7 @@ const bootstrap = async (app: Express) => {
   app.use("/api/friend-requests", friendRequestRouter);
   app.use("/api/backup", backupRouter);
   app.use("/api/redis", redisRouter);
+  app.use("/api/socket", socketRouter);
   app.use("/api/posts", postRouter);
   app.use("/api/comments", commentRouter);
   
@@ -74,6 +81,12 @@ const bootstrap = async (app: Express) => {
   // Serve the logs viewer page
   app.get("/logs-viewer", (req, res) => {
     const filePath = require('node:path').resolve('logs-viewer.html');
+    return res.sendFile(filePath);
+  });
+
+  // Serve the Socket.IO test page
+  app.get("/socket-test", (req, res) => {
+    const filePath = require('node:path').resolve('socket-test.html');
     return res.sendFile(filePath);
   });
 
