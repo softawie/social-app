@@ -3851,11 +3851,6 @@
   },
   {
     "id": 386,
-    "timestamp": "2025-10-06T17:18:24.347Z",
-    "method": "POST",
-    "url": "/auth/login",
-    "status": 200,
-    "responseTime": 214,
     "timestamp": "2025-09-30T18:01:37.088Z",
     "method": "GET",
     "url": "/api/logs/stats",
@@ -21413,5 +21408,225 @@
     "responseTime": 228,
     "ip": "::1",
     "userAgent": "PostmanRuntime/7.48.0"
+  },
+  {
+    "id": 2142,
+    "timestamp": "2025-10-17T22:10:03.893Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 225,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2143,
+    "timestamp": "2025-10-17T22:13:28.762Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 226,
+    "ip": "::1",
+    "userAgent": "PostmanRuntime/7.49.0"
+  },
+  {
+    "id": 2144,
+    "timestamp": "2025-10-17T22:15:15.235Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 401,
+    "responseTime": 222,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2145,
+    "timestamp": "2025-10-17T22:15:25.683Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 401,
+    "responseTime": 220,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2146,
+    "timestamp": "2025-10-17T22:15:43.866Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 401,
+    "responseTime": 222,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2147,
+    "timestamp": "2025-10-17T22:15:55.203Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 401,
+    "responseTime": 224,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2148,
+    "timestamp": "2025-10-17T22:16:13.399Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 221,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2149,
+    "timestamp": "2025-10-17T22:19:16.481Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 228,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2150,
+    "timestamp": "2025-10-17T22:22:15.526Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 228,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2151,
+    "timestamp": "2025-10-17T22:29:03.306Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 222,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2152,
+    "timestamp": "2025-10-17T22:37:22.648Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 226,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2153,
+    "timestamp": "2025-10-17T22:43:34.779Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 223,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2154,
+    "timestamp": "2025-10-17T22:47:01.312Z",
+    "method": "POST",
+    "url": "/auth/signup",
+    "status": 201,
+    "responseTime": 447,
+    "ip": "::1",
+    "userAgent": "PostmanRuntime/7.49.0"
+  },
+  {
+    "id": 2155,
+    "timestamp": "2025-10-17T22:47:16.412Z",
+    "method": "GET",
+    "url": "/auth/verify-email?token=2dxIFGDV9PkWBIaHvjMOmD8vudnVS4lgEtTOXXsLLgkttJyMXebHrcj5pgRAuGjv&email=almalisy%40gmail.com",
+    "status": 200,
+    "responseTime": 9,
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+  },
+  {
+    "id": 2156,
+    "timestamp": "2025-10-17T22:51:23.670Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 230,
+    "ip": "::1",
+    "userAgent": "PostmanRuntime/7.49.0"
+  },
+  {
+    "id": 2157,
+    "timestamp": "2025-10-17T23:05:46.240Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 234,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2158,
+    "timestamp": "2025-10-17T23:06:27.983Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 240,
+    "ip": "::1",
+    "userAgent": "PostmanRuntime/7.49.0"
+  },
+  {
+    "id": 2159,
+    "timestamp": "2025-10-17T23:12:18.769Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 227,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2160,
+    "timestamp": "2025-10-17T23:15:52.922Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 235,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2161,
+    "timestamp": "2025-10-17T23:54:39.823Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 238,
+    "ip": "::1",
+    "userAgent": "PostmanRuntime/7.49.0"
+  },
+  {
+    "id": 2162,
+    "timestamp": "2025-10-18T19:23:34.294Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 230,
+    "ip": "::1",
+    "userAgent": "Mobillak"
+  },
+  {
+    "id": 2163,
+    "timestamp": "2025-10-18T19:56:20.882Z",
+    "method": "POST",
+    "url": "/auth/login",
+    "status": 200,
+    "responseTime": 241,
+    "ip": "::1",
+    "userAgent": "Mobillak"
   }
 ]

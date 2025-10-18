@@ -140,7 +140,7 @@ const login = async (
   }
 
   // Try to get user from cache first for performance optimization
-  const cacheKey = `user_credentials:${email}`;
+  const cacheKey = `user_profile:${email}`;
   let user = await redisService.get(cacheKey);
   let cacheHit = false;
   
@@ -156,15 +156,15 @@ const login = async (
     );
     
     if (user) {
-      // Cache user credentials for 15 minutes to speed up subsequent logins
+      // Cache only non-sensitive user data for 15 minutes
       await redisService.set(cacheKey, {
         _id: user._id,
         email: user.email,
-        password: user.password,
         role: user.role,
         firstName: user.firstName,
         lastName: user.lastName,
         confirmEmail: user.confirmEmail
+        // ❌ NEVER cache password in Redis
       }, { ttl: 900 }); // 15 minutes cache
     }
   }
@@ -247,9 +247,9 @@ const logout = async (
     await SessionService.destroySession(sessionId);
   }
   
-  // Clear user cache and credential cache
+  // Clear user cache and profile cache
   pipeline.del(`user:${user._id}`);
-  pipeline.del(`user_credentials:${user.email}`);
+  pipeline.del(`user_profile:${user.email}`);
   
   // JWT `exp` is in seconds since epoch. Convert to ms and compute remaining time.
   const expSeconds = decoded.exp as number | undefined;

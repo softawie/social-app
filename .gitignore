@@ -7,3 +7,12 @@ src/logs/structured-logs.json
 src/.DS_Store
 .DS_Store
 backups/
+
+# Test files
+tests/test-*.log
+tests/temp/
+tests/results/
+
+# Redis dump files
+dump.rdb
+*.rdb

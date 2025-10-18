@@ -8,14 +8,15 @@ export enum FriendRequestStatus {
 }
 
 export interface IFriendRequest extends Document {
-  senderId: mongoose.Types.ObjectId;
-  receiverId: mongoose.Types.ObjectId;
+  senderId: mongoose.Types.ObjectId; // createdBy
+  receiverId: mongoose.Types.ObjectId;//sendTo
   status: FriendRequestStatus;
   createdAt: Date;
-  updatedAt: Date;
+  acceptedAt?: Date;
+  updatedAt?: Date;
 }
 
-const FriendRequestSchema: Schema = new Schema(
+const FriendRequestSchema: Schema = new Schema<IFriendRequest>(
   {
     senderId: {
       type: Schema.Types.ObjectId,
@@ -34,6 +35,14 @@ const FriendRequestSchema: Schema = new Schema(
       enum: Object.values(FriendRequestStatus),
       default: FriendRequestStatus.PENDING,
       required: true,
+    },
+    acceptedAt: {
+      type: Date,
+      required: false,
+    },
+    updatedAt: {
+      type: Date,
+      required: false,
     },
   },
   {

@@ -37,10 +37,10 @@ export const redisRateLimit = (options: RateLimitOptions) => {
       const key = keyGenerator(req);
       const windowInSeconds = Math.ceil(windowMs / 1000);
 
-      // Get current count
-      const current = await redisService.get<number>(key, { prefix: 'rate_limit', serialize: false }) || 0;
+      // Get current count using atomic increment with expiration
+      const current = await redisService.incrWithExpire(key, windowInSeconds, 'rate_limit');
 
-      if (current >= max) {
+      if (current > max) {
         // Rate limit exceeded
         if (onLimitReached) {
           onLimitReached(req, res);
@@ -63,13 +63,8 @@ export const redisRateLimit = (options: RateLimitOptions) => {
           (!skipFailedRequests || res.statusCode < 400);
 
         if (shouldCount) {
-          // Increment counter
-          redisService.incr(key, 'rate_limit').then(count => {
-            if (count === 1) {
-              // Set expiration for the first request in the window
-              redisService.expire(key, windowInSeconds, 'rate_limit');
-            }
-          }).catch(err => {
+          // Increment counter with proper TTL handling
+          redisService.incrWithExpire(key, windowInSeconds, 'rate_limit').catch(err => {
             console.error('Rate limit increment error:', err);
           });
         }
